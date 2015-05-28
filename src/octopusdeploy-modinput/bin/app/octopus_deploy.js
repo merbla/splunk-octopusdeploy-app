@@ -83,6 +83,8 @@
         var host = definition.parameters.octopusDeployHost;
         var apikey = definition.parameters.apikey;
 
+        Logger.info("Validating Settings for Octopus Deploy Host:"+ host);
+
         try { 
 
             if (host && host.length > 0 && apikey.length > 0) {
@@ -102,7 +104,7 @@
         }
     };
 
-    exports.events = function(host, apiKey, onComplete){
+    getEvents = function(host, apiKey, onComplete){
         var options = {
             baseUrl: host,
             uri: "api/events",
@@ -127,8 +129,7 @@
 
         // Get the checkpoint directory out of the modular input's metadata.
         var checkpointDir = this._inputDefinition.metadata["checkpoint_dir"];
-
-        //octo settings
+ 
         var octopusDeployHost = singleInput.octopusDeployHost;
         var apikey = singleInput.apikey;
 
@@ -143,10 +144,23 @@
             },
             function(callback) {
                 try {
-                    working =false;
+                   
+                    getEvents(octopusDeployHost, apikey, function(error, response, body){
+
+
+                        working = false;
+                    });
+
+
+                    var checkpointFilePath  = path.join(checkpointDir, owner + " " + repository + ".txt");
+                    var checkpointFileNewContents = "";
+                    var errorFound = false;
+
  
                 }
                 catch (e) {
+                    errorFound = true;
+                    working = false; 
                     callback(e);
                 }
             },
