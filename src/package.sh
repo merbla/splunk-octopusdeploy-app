@@ -1,0 +1,1 @@
+tar -czf octopusdeploy-modinput.tar.gz octopusdeploy-modinput/
