@@ -12,9 +12,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-//TODOs
-
-//  - Promises (RX?), spkunkjs async?
+//TODOs 
 
 //  - Deployments, Audit Logs, Releases
 
@@ -31,6 +29,8 @@
     var Scheme          = ModularInputs.Scheme;
     var Argument        = ModularInputs.Argument;
     var utils           = ModularInputs.utils;
+
+    var modName = "OCTOPUS DEPLOY MODINPUT";
  
     exports.getScheme = function() {
         var scheme = new Scheme("Octopus Deploy");
@@ -83,7 +83,7 @@
         var host = definition.parameters.octopusDeployHost;
         var apikey = definition.parameters.apikey;
 
-        Logger.info("Validating Settings for Octopus Deploy Host:"+ host);
+        Logger.info(modName +  ": Validating Settings for Host:"+ host);
 
         try { 
 
@@ -104,7 +104,10 @@
         }
     };
 
-    getEvents = function(host, apiKey, onComplete){
+    getEvents = function(host, apikey, onComplete){
+
+        Logger.debug(modName +  ": Getting events for Host:"+ host);
+
         var options = {
             baseUrl: host,
             uri: "api/events",
@@ -118,7 +121,6 @@
         }
 
         request(options, callback);
- 
     };
 
     exports.getDeployments = function(host, apiKey){
@@ -127,47 +129,99 @@
 
     exports.streamEvents = function(name, singleInput, eventWriter, done) {
 
-        // Get the checkpoint directory out of the modular input's metadata.
         var checkpointDir = this._inputDefinition.metadata["checkpoint_dir"];
- 
-        var octopusDeployHost = singleInput.octopusDeployHost;
-        var apikey = singleInput.apikey;
 
         var alreadyIndexed = 0;
- 
         var page = 1;
         var working = true;
 
-        Async.whilst(
-            function() {
-                return working;
-            },
-            function(callback) {
-                try {
-                   
-                    getEvents(octopusDeployHost, apikey, function(error, response, body){
+        Logger.info(modName + " " + name +  ": stream events.");
 
+        var host = singleInput.octopusDeployHost;
+        var key = singleInput.apikey;
 
-                        working = false;
-                    });
+        getEvents(host, key, function(error,response,body){
 
+            var j = JSON.parse(body);
 
-                    var checkpointFilePath  = path.join(checkpointDir, owner + " " + repository + ".txt");
-                    var checkpointFileNewContents = "";
-                    var errorFound = false;
+            Logger.debug(modName + " " +  ": Got Events!");
+            Logger.debug(modName + " " +  j.ItemType);
+            Logger.info(modName + " " +  ": Total Events found: " + j.Items.length);
 
- 
-                }
-                catch (e) {
-                    errorFound = true;
-                    working = false; 
-                    callback(e);
-                }
-            },
-            function(err) {
-                done(err);
+            
+            var checkpointFilePath  = path.join(checkpointDir, key + ".txt");
+            var checkpointFileNewContents = "";
+            var errorFound = false;
+
+            Logger.info(modName + " : Writing to file " + checkpointFilePath)
+            // Set the temporary contents of the checkpoint file to an empty string
+            var checkpointFileContents = "";
+            try {
+                checkpointFileContents = utils.readFile("", checkpointFilePath);
             }
-        );
+            catch (e) {
+                // If there's an exception, assume the file doesn't exist
+                // Create the checkpoint file with an empty string
+                fs.appendFileSync(checkpointFilePath, "");
+            }  
+
+            for (var i = 0; i < j.Items.length && !errorFound; i++) {
+
+                //Check to see if the item has been indexed
+                var octoEvent = j.Items[i];
+
+                Logger.info(modName + ": Checking Event Id - " + octoEvent.Id);
+                
+                // If the file exists and doesn't contain the sha, or if the file doesn't exist.
+                if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
+                    try {
+
+                        Logger.info(modName + ": Event Id - " + octoEvent.Id + " not found!");
+
+
+                        var event = new Event({
+                            stanza: host,
+                            sourcetype: "octopus_deploy_event",
+                            data: octoEvent, // Have Splunk index our event data as JSON, if data is an object it will be passed through JSON.stringify()
+                            time: Date.parse(octoEvent.Occurred) // Set the event timestamp to the time of the commit.
+                        });
+
+                        eventWriter.writeEvent(event);
+                        
+                        // Append this commit to the string we'll write at the end
+                        checkpointFileNewContents += octoEvent.Id + "\n"; 
+                        Logger.info(modName, "Indexed an Octopus Deploy Event: " + octoEvent.Id);
+                    }
+                    catch (e) {
+                        errorFound = true;
+                        working = false; // Stop streaming if we get an error.
+                        Logger.error(name, e.message);
+                        fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+                        done(e);
+
+                        // We had an error, die.
+                        return;
+                    }
+                }
+                 else {
+                    alreadyIndexed++;
+                }
+
+            };
+
+            fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+                        
+            if (alreadyIndexed > 0) {
+                Logger.info(name, "Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy events from " + host);
+            }
+
+            page++;
+            alreadyIndexed = 0;
+
+            working= false;
+            done();
+
+        }); 
     };
 
     ModularInputs.execute(exports, module);
