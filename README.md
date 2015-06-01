@@ -1,1 +1,1 @@
-# splunking-an-octopus
+##splunk-octopus-deploy-modular-input
