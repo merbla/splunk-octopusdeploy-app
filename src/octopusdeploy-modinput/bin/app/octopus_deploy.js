@@ -104,6 +104,24 @@
         }
     };
 
+    mapToEvent=function (stanza, octoEvent){
+
+        //TODO: Change to map in node
+
+        var splunkEvent = new Event({
+            stanza: host,
+            sourcetype: "octopus_deploy_event",
+            data: octoEvent, // Have Splunk index our event data as JSON, if data is an object it will be passed through JSON.stringify()
+            time: Date.parse(octoEvent.Occurred) // Set the event timestamp to the time of the commit.
+        });
+
+        return splunkEvent;
+    }
+
+    processEvents = function(data){
+
+    }
+
     getEventsPaged = function(host, apikey, uri, onComplete, onError){
 
         if(!uri){
@@ -163,6 +181,19 @@
         request(options, callback);
     };
 
+    checkFile = function(checkpointFilePath){
+
+        var checkpointFileContents = "";
+
+        try {
+            checkpointFileContents = utils.readFile("", checkpointFilePath);
+        }
+        catch (e) {
+            fs.appendFileSync(checkpointFilePath, "");
+        }  
+        return checkpointFileContents;
+    }
+
     exports.getDeployments = function(host, apiKey){
 
     };
@@ -172,6 +203,7 @@
         var checkpointDir = this._inputDefinition.metadata["checkpoint_dir"];
 
         var alreadyIndexed = 0;
+        var skipEvents =0;
         var page = 1;
         var working = true;
 
@@ -188,58 +220,30 @@
             function(callback) {
                 try {
 
+                    var checkpointFilePath  = path.join(checkpointDir, key + ".txt");
+                    var checkpointFileNewContents = "";
+                    var errorFound = false;
+
                     getEventsPaged(host, key, null, function(data){
 
-                        Logger.info(modName + " : Got data from Events Paged");
-                    });
+                        Logger.info(modName + " : EventsPaged - Got data");
+                        Logger.info(modName + " : EventsPaged - " + data.Items.length);
 
-                    getEvents(host, key, function(error,response,body){
+                        var checkpointFileContents = checkFile(checkpointFilePath);
 
-                        var j = JSON.parse(body);
+                        for (var i = 0; i < data.Items.length && !errorFound; i++) {
+ 
+                            var octoEvent = data.Items[i];
+                            Logger.info(modName + ": Checking Event Id - " + octoEvent.Id); 
 
-                        Logger.debug(modName + " " +  ": Got Events!");
-                        Logger.debug(modName + " " +  j.ItemType);
-                        Logger.info(modName + " " +  ": Total Events found: " + j.Items.length);
 
-                        var checkpointFilePath  = path.join(checkpointDir, key + ".txt");
-                        var checkpointFileNewContents = "";
-                        var errorFound = false;
-
-                        Logger.info(modName + " : Writing to file " + checkpointFilePath)
-                        
-                        // Set the temporary contents of the checkpoint file to an empty string
-                        var checkpointFileContents = "";
-
-                        try {
-                            checkpointFileContents = utils.readFile("", checkpointFilePath);
-                        }
-                        catch (e) {
-                            // If there's an exception, assume the file doesn't exist
-                            // Create the checkpoint file with an empty string
-                            fs.appendFileSync(checkpointFilePath, "");
-                        }  
-
-                        for (var i = 0; i < j.Items.length && !errorFound; i++) {
-
-                            //Check to see if the item has been indexed
-                            var octoEvent = j.Items[i];
-
-                            Logger.info(modName + ": Checking Event Id - " + octoEvent.Id);
-
-                            // If the file exists and doesn't contain the sha, or if the file doesn't exist.
                             if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
                                 try {
 
                                     Logger.info(modName + ": Event Id - " + octoEvent.Id + " not found!");
 
-                                    var event = new Event({
-                                    stanza: host,
-                                    sourcetype: "octopus_deploy_event",
-                                    data: octoEvent, // Have Splunk index our event data as JSON, if data is an object it will be passed through JSON.stringify()
-                                    time: Date.parse(octoEvent.Occurred) // Set the event timestamp to the time of the commit.
-                                    });
-
-                                    eventWriter.writeEvent(event);
+                                    var evt = mapToEvent(host, octoEvent);
+                                    eventWriter.writeEvent(evt);
 
                                     // Append this commit to the string we'll write at the end
                                     checkpointFileNewContents += octoEvent.Id + "\n"; 
@@ -250,9 +254,7 @@
                                     working = false; // Stop streaming if we get an error.
                                     Logger.error(name, e.message);
                                     fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
-                                    done(e);
-
-                                    // We had an error, die.
+                                    done(e); 
                                     return;
                                 }
                             }
@@ -264,17 +266,26 @@
                         fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
 
                         if (alreadyIndexed > 0) {
-                            Logger.info(name, "Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy events from " + host);
+                            Logger.info(modName, "Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy events from " + host);
                         }
 
-                        page++;
+                        skipEvents = skipEvents + 30; //Octo events are paged at 30 items
                         alreadyIndexed = 0;
 
-                        working= false;
-                        callback();
-                        done();
 
-                    }); 
+                        if(data && data.Links && data.Links["Page.Next"]){
+                            var nextUri = data.Links["Page.Next"];
+                            //More items to process
+                            Logger.info(modName, "Found more items to process :  " + nextUri);
+
+                        }
+                        else{
+                            working = false
+                            done();
+                        }
+
+                        callback();
+                    });
  
                 }
                 catch (e) {
@@ -286,7 +297,6 @@
                 done(err);
             }
         );
-      
     };
 
     ModularInputs.execute(exports, module);
