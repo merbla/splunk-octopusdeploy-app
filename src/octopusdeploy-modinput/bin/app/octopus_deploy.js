@@ -59,7 +59,6 @@
 
         return scheme;
     };
-
    
     function validateOctoSettings(host, apikey, onComplete){
     
@@ -116,11 +115,7 @@
         });
 
         return splunkEvent;
-    }
-
-    processEvents = function(data){
-
-    }
+    } 
 
     getEventsPaged = function(host, apikey, uri, onComplete, onError){
 
@@ -149,7 +144,7 @@
             var data = JSON.parse(body);
 
             if(data){
-                Logger.info(modName + " : Found " + data.Items.length)
+                Logger.info(modName + " : Found " + data.Items.length + " events")
                 onComplete(data);
             }
             else{
@@ -160,26 +155,7 @@
 
         request(options, callback);
         
-    };
-
-    getEvents = function(host, apikey, onComplete){
-
-        Logger.debug(modName +  ": Getting events for Host:"+ host);
-
-        var options = {
-            baseUrl: host,
-            uri: "api/events",
-            headers: {
-                'X-Octopus-ApiKey' : apikey
-            }
-        };
-
-        function callback(error, response, body) { 
-            onComplete(error, response, body);
-        }
-
-        request(options, callback);
-    };
+    }; 
 
     checkFile = function(checkpointFilePath){
 
@@ -194,7 +170,81 @@
         return checkpointFileContents;
     }
 
-    exports.getDeployments = function(host, apiKey){
+    getDeploymentsPaged = function(host, apikey, uri, onComplete, onError){
+        if(!uri){
+            uri = "api/deployments";
+        }
+
+
+        Logger.debug(modName +  ": Getting deployments for Host:"+ host + " Uri: " +uri);
+
+        var options = {
+            baseUrl: host,
+            uri: uri,  // e.g. api/events?skip=30&user=
+            headers: {
+                'X-Octopus-ApiKey' : apikey
+            }
+        };
+
+        function callback(error, response, body) {
+
+            if(error){
+                Logger.err(modName + ": An error occured calling host:"+ host + " Uri: " +uri)
+                onError(error);
+            }
+
+            var data = JSON.parse(body);
+
+            if(data){
+                Logger.info(modName + " : Found " + data.Items.length + " deployments")
+                onComplete(data);
+            }
+            else{
+                Logger.err(modName + " There was an issue converting JSON")
+            }
+
+        }
+
+        request(options, callback);
+
+    };
+
+    getTasksPaged = function(host, apikey, uri, onComplete, onError){
+        if(!uri){
+            uri = "api/tasks";
+        }
+
+
+        Logger.debug(modName +  ": Getting tasks for Host:"+ host + " Uri: " +uri);
+
+        var options = {
+            baseUrl: host,
+            uri: uri,  // e.g. api/events?skip=30&user=
+            headers: {
+                'X-Octopus-ApiKey' : apikey
+            }
+        };
+
+        function callback(error, response, body) {
+
+            if(error){
+                Logger.err(modName + ": An error occured calling host:"+ host + " Uri: " +uri)
+                onError(error);
+            }
+
+            var data = JSON.parse(body);
+
+            if(data){
+                Logger.info(modName + " : Found " + data.Items.length + " tasks")
+                onComplete(data);
+            }
+            else{
+                Logger.err(modName + " There was an issue converting JSON")
+            }
+
+        }
+
+        request(options, callback);
 
     };
 
@@ -225,9 +275,6 @@
                     var errorFound = false;
 
                     getEventsPaged(host, key, uri, function(data){
-
-                        Logger.info(modName + " : EventsPaged - Got data");
-                        Logger.info(modName + " : EventsPaged - " + data.Items.length);
 
                         var checkpointFileContents = checkFile(checkpointFilePath);
 
