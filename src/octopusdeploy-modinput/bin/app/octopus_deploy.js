@@ -104,7 +104,7 @@
         }
     };
 
-    mapToEvent=function (stanza, octoEvent){
+    mapToEvent=function (host, octoEvent){
 
         //TODO: Change to map in node
 
@@ -203,11 +203,11 @@
         var checkpointDir = this._inputDefinition.metadata["checkpoint_dir"];
 
         var alreadyIndexed = 0;
-        var skipEvents =0;
+        var uri = null;
         var page = 1;
         var working = true;
 
-        Logger.info(modName + " " + name +  ": stream events.");
+        Logger.info(modName + " Starting stream events for :" + name);
 
         var host = singleInput.octopusDeployHost;
         var key = singleInput.apikey;
@@ -224,7 +224,7 @@
                     var checkpointFileNewContents = "";
                     var errorFound = false;
 
-                    getEventsPaged(host, key, null, function(data){
+                    getEventsPaged(host, key, uri, function(data){
 
                         Logger.info(modName + " : EventsPaged - Got data");
                         Logger.info(modName + " : EventsPaged - " + data.Items.length);
@@ -259,6 +259,8 @@
                                 }
                             }
                             else {
+                                Logger.info(modName, "Already Indexed event: " + octoEvent.Id);
+
                                 alreadyIndexed++;
                             }
                         };
@@ -266,20 +268,20 @@
                         fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
 
                         if (alreadyIndexed > 0) {
-                            Logger.info(modName, "Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy events from " + host);
+                            Logger.info(modName, "Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy events from " + host + uri);
                         }
-
-                        skipEvents = skipEvents + 30; //Octo events are paged at 30 items
                         alreadyIndexed = 0;
 
 
                         if(data && data.Links && data.Links["Page.Next"]){
                             var nextUri = data.Links["Page.Next"];
-                            //More items to process
+                            
                             Logger.info(modName, "Found more items to process :  " + nextUri);
-
+                            uri = nextUri;
                         }
                         else{
+                            Logger.info(modName, "No more events!");
+
                             working = false
                             done();
                         }
