@@ -1,0 +1,11 @@
+{
+    "name": "octopus_deploy_modular_input",
+    "version": "0.0.3",
+    "description": "Splunk modular input for generating events from Octopus Deploy",
+    "main": "octopus_deploy.js",
+    "dependencies": {
+        "splunk-sdk": ">=1.4.0",
+        "request": "2.55.0"
+    },
+    "author": "Matthew Erbs"
+}

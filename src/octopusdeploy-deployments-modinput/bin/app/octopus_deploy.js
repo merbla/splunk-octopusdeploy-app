@@ -175,7 +175,6 @@
             uri = "api/deployments";
         }
 
-
         Logger.debug(modName +  ": Getting deployments for Host:"+ host + " Uri: " +uri);
 
         var options = {
