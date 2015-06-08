@@ -256,7 +256,7 @@
         var page = 1;
         var working = true;
 
-        Logger.info(modName + " Starting stream events for :" + name);
+        Logger.info(name, modName + " Starting stream events for :");
 
         var host = singleInput.octopusDeployHost;
         var key = singleInput.apikey;
@@ -280,20 +280,20 @@
                         for (var i = 0; i < data.Items.length && !errorFound; i++) {
  
                             var octoEvent = data.Items[i];
-                            Logger.info(modName + ": Checking Event Id - " + octoEvent.Id); 
+                            Logger.info(name, modName + ": Checking Event Id - " + octoEvent.Id); 
 
 
                             if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
                                 try {
 
-                                    Logger.info(modName + ": Event Id - " + octoEvent.Id + " not found!");
+                                    Logger.info(name, modName + ": Event Id - " + octoEvent.Id + " not found!");
 
                                     var evt = mapToEvent(host, octoEvent);
                                     eventWriter.writeEvent(evt);
 
                                     // Append this commit to the string we'll write at the end
                                     checkpointFileNewContents += octoEvent.Id + "\n"; 
-                                    Logger.info(modName, "Indexed an Octopus Deploy Event: " + octoEvent.Id);
+                                    Logger.info(name, modName + ":Indexed an Octopus Deploy Event: " + octoEvent.Id);
                                 }
                                 catch (e) {
                                     errorFound = true;
@@ -305,7 +305,7 @@
                                 }
                             }
                             else {
-                                Logger.info(modName, "Already Indexed event: " + octoEvent.Id);
+                                Logger.info(name, modName + " :Already Indexed event: " + octoEvent.Id);
 
                                 alreadyIndexed++;
                             }
@@ -314,7 +314,7 @@
                         fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
 
                         if (alreadyIndexed > 0) {
-                            Logger.info(modName, "Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy events from " + host + uri);
+                            Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy events from " + host + uri);
                         }
                         alreadyIndexed = 0;
 
@@ -322,11 +322,11 @@
                         if(data && data.Links && data.Links["Page.Next"]){
                             var nextUri = data.Links["Page.Next"];
                             
-                            Logger.info(modName, "Found more items to process :  " + nextUri);
+                            Logger.info(name, modName +": Found more items to process :  " + nextUri);
                             uri = nextUri;
                         }
                         else{
-                            Logger.info(modName, "No more events!");
+                            Logger.info(name, modName + ": No more events!");
 
                             working = false
                             done();
