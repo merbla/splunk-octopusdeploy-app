@@ -12,7 +12,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-//TODOs 
+//TODOs
 
 //  - Deployments, Audit Logs, Releases
 
@@ -31,11 +31,11 @@
     var utils           = ModularInputs.utils;
 
     var modName = "OCTOPUS DEPLOY MODINPUT";
- 
-    exports.getScheme = function() {
-        var scheme = new Scheme("Octopus Deploy");
 
-        scheme.description = "Streams events from Octopus Deploy.";
+    exports.getScheme = function() {
+        var scheme = new Scheme("Octopus Deploy Deployments");
+
+        scheme.description = "Streams deployment events from Octopus Deploy.";
         scheme.useExternalValidation = true;
         scheme.useSingleInstance = false; // Set to false so an input can have an optional interval parameter.
 
@@ -47,7 +47,7 @@
                 description: "The  endpoint of Octopus Deploy (e.g. https://myOctopusServer/)",
                 requiredOnCreate: true,
                 requiredOnEdit: true
-            }), 
+            }),
             new Argument({
                 name: "apikey",
                 dataType: Argument.dataTypeString,
@@ -59,9 +59,9 @@
 
         return scheme;
     };
-   
+
     function validateOctoSettings(host, apikey, onComplete){
-    
+
         var options = {
             baseUrl: host,
             uri: "api/users/me",
@@ -70,13 +70,13 @@
             }
         };
 
-        function callback(error, response, body) { 
+        function callback(error, response, body) {
             onComplete(error, response, body);
         }
 
         request(options, callback);
-    }; 
- 
+    };
+
     exports.validateInput = function(definition, done) {
 
         var host = definition.parameters.octopusDeployHost;
@@ -84,7 +84,7 @@
 
         Logger.info(modName +  ": Validating Settings for Host:"+ host);
 
-        try { 
+        try {
 
             if (host && host.length > 0 && apikey.length > 0) {
 
@@ -115,7 +115,7 @@
         });
 
         return splunkEvent;
-    } 
+    }
 
     getEventsPaged = function(host, apikey, uri, onComplete, onError){
 
@@ -154,8 +154,8 @@
         }
 
         request(options, callback);
-        
-    }; 
+
+    };
 
     checkFile = function(checkpointFilePath){
 
@@ -166,7 +166,7 @@
         }
         catch (e) {
             fs.appendFileSync(checkpointFilePath, "");
-        }  
+        }
         return checkpointFileContents;
     }
 
@@ -278,9 +278,9 @@
                         var checkpointFileContents = checkFile(checkpointFilePath);
 
                         for (var i = 0; i < data.Items.length && !errorFound; i++) {
- 
+
                             var octoEvent = data.Items[i];
-                            Logger.info(modName + ": Checking Event Id - " + octoEvent.Id); 
+                            Logger.info(modName + ": Checking Event Id - " + octoEvent.Id);
 
 
                             if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
@@ -292,7 +292,7 @@
                                     eventWriter.writeEvent(evt);
 
                                     // Append this commit to the string we'll write at the end
-                                    checkpointFileNewContents += octoEvent.Id + "\n"; 
+                                    checkpointFileNewContents += octoEvent.Id + "\n";
                                     Logger.info(modName, "Indexed an Octopus Deploy Event: " + octoEvent.Id);
                                 }
                                 catch (e) {
@@ -300,7 +300,7 @@
                                     working = false; // Stop streaming if we get an error.
                                     Logger.error(name, e.message);
                                     fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
-                                    done(e); 
+                                    done(e);
                                     return;
                                 }
                             }
@@ -321,7 +321,7 @@
 
                         if(data && data.Links && data.Links["Page.Next"]){
                             var nextUri = data.Links["Page.Next"];
-                            
+
                             Logger.info(modName, "Found more items to process :  " + nextUri);
                             uri = nextUri;
                         }
@@ -334,7 +334,7 @@
 
                         callback();
                     });
- 
+
                 }
                 catch (e) {
                     callback(e);
