@@ -14,11 +14,13 @@ var utils           = ModularInputs.utils;
 var modName = "OCTOPUS DEPLOY MODINPUT";
 
 exports.getScheme = function() {
-    var scheme = new Scheme("octopus_deploy_deployments");
+    var scheme = new Scheme("Octopus Deploy Deloyments");
 
     scheme.description = "Streams deployment events from Octopus Deploy.";
     scheme.useExternalValidation = true;
     scheme.useSingleInstance = false; // Set to false so an input can have an optional interval parameter.
+
+
 
     scheme.args = [
 
