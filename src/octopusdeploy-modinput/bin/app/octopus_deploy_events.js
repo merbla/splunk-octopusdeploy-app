@@ -41,7 +41,8 @@ exports.getScheme = function() {
     return scheme;
 };
 
-function validateOctoSettings(host, apikey, onComplete){
+
+function validateOctoUser(host, apikey, onComplete){
 
     var options = {
         baseUrl: host,
@@ -57,6 +58,29 @@ function validateOctoSettings(host, apikey, onComplete){
 
     request(options, callback);
 };
+function validateOctoSettings(host, apikey, onComplete){
+
+    var options = {
+        baseUrl: host,
+        uri: "api/events",
+        headers: {
+            'X-Octopus-ApiKey' : apikey
+        }
+    };
+
+    function callback(error, response, body) {
+        onComplete(error, response, body);
+    }
+
+    request(options, callback);
+};
+
+
+        // Logger.info("statusCode: ", response.statusCode); // <======= Here's the status code
+        // Logger.info("headers: ", response.headers);
+        // Logger.info("body: ", body);
+
+
 
 exports.validateInput = function(definition, done) {
 

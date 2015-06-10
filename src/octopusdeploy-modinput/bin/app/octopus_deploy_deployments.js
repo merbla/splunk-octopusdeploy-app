@@ -147,7 +147,7 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
                         uri = nextUri;
                     }
                     else{
-                        Logger.info(name, modName + ": No more events!");
+                        Logger.info(name, modName + ": No more deployments!");
 
                         working = false
                         done();
@@ -219,10 +219,6 @@ getDeploymentsPaged = function(host, apikey, uri, onComplete, onError){
             onError(error);
         }
 
-        Logger.info("statusCode: ", response.statusCode); // <======= Here's the status code
-        Logger.info("headers: ", response.headers);
-        Logger.info("body: ", body);
-
         var data;
 
         try {
@@ -249,7 +245,7 @@ function validateOctoSettings(host, apikey, onComplete){
 
     var options = {
         baseUrl: host,
-        uri: "api/users/me",
+        uri: "api/deployments",
         headers: {
             'X-Octopus-ApiKey' : apikey
         }

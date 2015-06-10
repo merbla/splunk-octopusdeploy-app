@@ -7,3 +7,8 @@ apikey = the api key
 *Streams deployments from Octopus Deploy
 octopusDeployHost = the host
 apikey = the api key
+
+[octopus_deploy_tasks://<name>]
+*Streams deployments from Octopus Deploy
+octopusDeployHost = the host
+apikey = the api key
