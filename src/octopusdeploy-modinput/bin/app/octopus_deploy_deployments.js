@@ -1,4 +1,3 @@
-
 var fs              = require("fs");
 var path            = require("path");
 var splunkjs        = require("splunk-sdk");
@@ -14,20 +13,18 @@ var utils           = ModularInputs.utils;
 var modName = "OCTOPUS DEPLOY MODINPUT";
 
 exports.getScheme = function() {
-    var scheme = new Scheme("Octopus Deploy Deloyments");
+    var scheme = new Scheme("Octopus Deploy Deployments");
 
-    scheme.description = "Streams deployment events from Octopus Deploy.";
+    scheme.description = "Streams deployments from Octopus Deploy.";
     scheme.useExternalValidation = true;
     scheme.useSingleInstance = false; // Set to false so an input can have an optional interval parameter.
-
-
 
     scheme.args = [
 
         new Argument({
             name: "octopusDeployHost",
             dataType: Argument.dataTypeString,
-            description: "The  endpoint of Octopus Deploy (e.g. https://myOctopusServer/)",
+            description: "The endpoint of Octopus Deploy (e.g. https://myOctopusServer/)",
             requiredOnCreate: true,
             requiredOnEdit: true
         }),
@@ -38,42 +35,16 @@ exports.getScheme = function() {
             requiredOnCreate: true,
             requiredOnEdit: true
         })
-        // ,
-        // new Argument({
-        //     name: "sourceType",
-        //     dataType: Argument.dataTypeString,
-        //     description: "The source type.",
-        //     requiredOnCreate: true,
-        //     requiredOnEdit: true
-        // })
 
     ];
 
     return scheme;
 };
 
-function validateOctoSettings(host, apikey, onComplete){
-
-    var options = {
-        baseUrl: host,
-        uri: "api/users/me",
-        headers: {
-            'X-Octopus-ApiKey' : apikey
-        }
-    };
-
-    function callback(error, response, body) {
-        onComplete(error, response, body);
-    }
-
-    request(options, callback);
-};
-
 exports.validateInput = function(definition, done) {
 
     var host = definition.parameters.octopusDeployHost;
     var apikey = definition.parameters.apikey;
-    var sourceType = definition.parameters.sourceType;
 
     Logger.info(modName +  ": Validating Settings for Host:"+ host);
 
@@ -96,70 +67,6 @@ exports.validateInput = function(definition, done) {
     }
 };
 
-mapToEvent=function (host, octoEvent){
-
-    //TODO: Change to map in node
-
-    var splunkEvent = new Event({
-        stanza: host,
-        sourcetype: "octopus_deploy_event",
-        data: octoEvent, // Have Splunk index our event data as JSON, if data is an object it will be passed through JSON.stringify()
-        time: Date.parse(octoEvent.Created) // Set the event timestamp to the time of the commit.
-    });
-
-    return splunkEvent;
-}
-
-checkFile = function(checkpointFilePath){
-
-    var checkpointFileContents = "";
-
-    try {
-        checkpointFileContents = utils.readFile("", checkpointFilePath);
-    }
-    catch (e) {
-        fs.appendFileSync(checkpointFilePath, "");
-    }
-    return checkpointFileContents;
-}
-
-getDeploymentsPaged = function(host, apikey, uri, onComplete, onError){
-    if(!uri){
-        uri = "api/deployments";
-    }
-
-    Logger.debug(modName +  ": Getting deployments for Host:"+ host + " Uri: " +uri);
-
-    var options = {
-        baseUrl: host,
-        uri: uri,  // e.g. api/events?skip=30&user=
-        headers: {
-            'X-Octopus-ApiKey' : apikey
-        }
-    };
-
-    function callback(error, response, body) {
-
-        if(error){
-            Logger.err(modName + ": An error occured calling host:"+ host + " Uri: " +uri)
-            onError(error);
-        }
-
-        var data = JSON.parse(body);
-
-        if(data){
-            Logger.info(modName + " : Found " + data.Items.length + " deployments")
-            onComplete(data);
-        }
-        else{
-            Logger.err(modName + " There was an issue converting JSON")
-        }
-
-    }
-
-    request(options, callback);
-
-};
 
 exports.streamEvents = function(name, singleInput, eventWriter, done) {
 
@@ -167,10 +74,9 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
 
     var alreadyIndexed = 0;
     var uri = null;
-    var page = 1;
     var working = true;
 
-    Logger.info(name, modName + " Starting stream deployments for :" + name);
+    Logger.info(name, modName + " Starting stream events for :");
 
     var host = singleInput.octopusDeployHost;
     var key = singleInput.apikey;
@@ -207,7 +113,7 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
 
                                 // Append this commit to the string we'll write at the end
                                 checkpointFileNewContents += octoEvent.Id + "\n";
-                                Logger.info(name, modName + " Indexed an Octopus Deploy Deployment: " + octoEvent.Id);
+                                Logger.info(name, modName + ":Indexed an Octopus Deploy Deployment: " + octoEvent.Id);
                             }
                             catch (e) {
                                 errorFound = true;
@@ -219,7 +125,7 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
                             }
                         }
                         else {
-                            Logger.info(name, modName + " Already Indexed Deployment: " + octoEvent.Id);
+                            Logger.info(name, modName + " :Already Indexed Deployment: " + octoEvent.Id);
 
                             alreadyIndexed++;
                         }
@@ -228,19 +134,20 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
                     fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
 
                     if (alreadyIndexed > 0) {
-                        Logger.info(modName, "Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy deployments from " + host + uri);
+                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy Deployment from " + host + uri);
                     }
+
                     alreadyIndexed = 0;
 
 
                     if(data && data.Links && data.Links["Page.Next"]){
                         var nextUri = data.Links["Page.Next"];
 
-                        Logger.info(name, modName + " Found more items to process :  " + nextUri);
+                        Logger.info(name, modName +": Found more items to process :  " + nextUri);
                         uri = nextUri;
                     }
                     else{
-                        Logger.info(name, modName +" No more Deployments!");
+                        Logger.info(name, modName + ": No more events!");
 
                         working = false
                         done();
@@ -259,4 +166,98 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
             done(err);
         }
     );
+};
+
+
+checkFile = function(checkpointFilePath){
+
+    var checkpointFileContents = "";
+
+    try {
+        checkpointFileContents = utils.readFile("", checkpointFilePath);
+    }
+    catch (e) {
+        fs.appendFileSync(checkpointFilePath, "");
+    }
+    return checkpointFileContents;
+}
+
+mapToEvent = function (host, octoEvent){
+
+    //TODO: Change to map in node
+
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:deployment",
+        data: octoEvent, // Have Splunk index our event data as JSON, if data is an object it will be passed through JSON.stringify()
+        time: Date.parse(octoEvent.Created) // Set the event timestamp to the time of the commit.
+    });
+
+    return splunkEvent;
+}
+
+
+getDeploymentsPaged = function(host, apikey, uri, onComplete, onError){
+    if(!uri){
+        uri = "api/deployments";
+    }
+
+    Logger.debug(modName +  ": Getting deployments for Host:"+ host + " Uri: " +uri);
+
+    var options = {
+        baseUrl: host,
+        uri: uri,  // e.g. api/events?skip=30&user=
+        headers: {
+            'X-Octopus-ApiKey' : apikey
+        }
+    };
+
+    function callback(error, response, body) {
+
+        if(error){
+            Logger.err(modName + ": An error occured calling host:"+ host + " Uri: " +uri)
+            onError(error);
+        }
+
+        Logger.info("statusCode: ", response.statusCode); // <======= Here's the status code
+        Logger.info("headers: ", response.headers);
+        Logger.info("body: ", body);
+
+        var data;
+
+        try {
+          data = JSON.parse(body);
+
+        } catch (e) {
+        }
+
+        if(data){
+            Logger.info(modName + " : Found " + data.Items.length + " deployments")
+            onComplete(data);
+        }
+        else{
+            Logger.err(modName + " There was an issue converting JSON")
+        }
+    }
+
+    request(options, callback);
+
+};
+
+
+function validateOctoSettings(host, apikey, onComplete){
+
+    var options = {
+        baseUrl: host,
+        uri: "api/users/me",
+        headers: {
+            'X-Octopus-ApiKey' : apikey
+        }
+    };
+
+    function callback(error, response, body) {
+        onComplete(error, response, body);
+    }
+
+    request(options, callback);
 };

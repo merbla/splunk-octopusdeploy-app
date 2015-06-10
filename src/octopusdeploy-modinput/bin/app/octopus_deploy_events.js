@@ -1,4 +1,3 @@
-
 var fs              = require("fs");
 var path            = require("path");
 var splunkjs        = require("splunk-sdk");
@@ -104,7 +103,7 @@ mapToEvent = function (host, octoEvent){
 
     var splunkEvent = new Event({
         stanza: host,
-        sourcetype: "octopus_deploy_event",
+        sourcetype: "octopus:event",
         data: octoEvent, // Have Splunk index our event data as JSON, if data is an object it will be passed through JSON.stringify()
         time: Date.parse(octoEvent.Occurred) // Set the event timestamp to the time of the commit.
     });

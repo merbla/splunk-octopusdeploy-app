@@ -1,21 +1,3 @@
-// Copyright 2015 Matthew Erbs.
-//
-// Licensed under the Apache License, Version 2.0 (the "License"): you may
-// not use this file except in compliance with the License. You may obtain
-// a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-
-//TODOs
-
-//  - Deployments, Audit Logs, Releases
-
 
 (function() {
     var fs              = require("fs");
@@ -35,7 +17,7 @@
     exports.getScheme = function() {
         var scheme = new Scheme("Octopus Deploy Tasks");
 
-        scheme.description = "Streams events from Octopus Deploy.";
+        scheme.description = "Streams tasks from Octopus Deploy.";
         scheme.useExternalValidation = true;
         scheme.useSingleInstance = false; // Set to false so an input can have an optional interval parameter.
 
@@ -109,7 +91,7 @@
 
         var splunkEvent = new Event({
             stanza: host,
-            sourcetype: "octopus_deploy_event",
+            sourcetype: "octopus:task",
             data: octoEvent, // Have Splunk index our event data as JSON, if data is an object it will be passed through JSON.stringify()
             time: Date.parse(octoEvent.Occurred) // Set the event timestamp to the time of the commit.
         });
