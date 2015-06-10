@@ -133,7 +133,7 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
                     fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
 
                     if (alreadyIndexed > 0) {
-                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy Deployment from " + host + uri);
+                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy tasks from " + host + uri);
                     }
 
                     alreadyIndexed = 0;
@@ -182,14 +182,11 @@ checkFile = function(checkpointFilePath){
 }
 
 mapToEvent = function (host, octoEvent){
-
-    //TODO: Change to map in node
-
     var splunkEvent = new Event({
         stanza: host,
-        sourcetype: "octopus:deployment",
-        data: octoEvent, // Have Splunk index our event data as JSON, if data is an object it will be passed through JSON.stringify()
-        time: Date.parse(octoEvent.Created) // Set the event timestamp to the time of the commit.
+        sourcetype: "octopus:task",
+        data: octoEvent,
+        time: Date.parse(octoEvent.CompletedTime)
     });
 
     return splunkEvent;
@@ -197,7 +194,7 @@ mapToEvent = function (host, octoEvent){
 
 getTasksPaged = function(host, apikey, uri, onComplete, onError){
     if(!uri){
-        uri = "api/deployments";
+        uri = "api/tasks";
     }
 
     Logger.debug(modName +  ": Getting tasks for Host:"+ host + " Uri: " +uri);
@@ -227,7 +224,7 @@ getTasksPaged = function(host, apikey, uri, onComplete, onError){
         }
 
         if(data){
-            Logger.info(modName + " : Found " + data.Items.length + " deployments")
+            Logger.info(modName + " : Found " + data.Items.length + " tasks")
             onComplete(data);
         }
         else{
