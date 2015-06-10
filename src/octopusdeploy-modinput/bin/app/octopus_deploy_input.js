@@ -1,4 +1,3 @@
-
 var fs              = require("fs");
 var path            = require("path");
 var splunkjs        = require("splunk-sdk");
@@ -42,22 +41,6 @@ exports.getScheme = function() {
     return scheme;
 };
 
-function validateOctoSettings(host, apikey, onComplete){
-
-    var options = {
-        baseUrl: host,
-        uri: "api/users/me",
-        headers: {
-            'X-Octopus-ApiKey' : apikey
-        }
-    };
-
-    function callback(error, response, body) {
-        onComplete(error, response, body);
-    }
-
-    request(options, callback);
-};
 
 exports.validateInput = function(definition, done) {
 
@@ -85,6 +68,105 @@ exports.validateInput = function(definition, done) {
     }
 };
 
+exports.streamEvents = function(name, singleInput, eventWriter, done) {
+
+    var checkpointDir = this._inputDefinition.metadata["checkpoint_dir"];
+
+    var alreadyIndexed = 0;
+    var uri = null;
+    var working = true;
+
+    Logger.info(name, modName + " Starting stream events for :");
+
+    var host = singleInput.octopusDeployHost;
+    var key = singleInput.apikey;
+
+
+    Async.whilst(
+        function() {
+            return working;
+        },
+        function(callback) {
+            try {
+
+                var checkpointFilePath  = path.join(checkpointDir, key + ".txt");
+                var checkpointFileNewContents = "";
+                var errorFound = false;
+
+                var eventsToWrite = {};
+
+                Async.parallel([
+                   function(complete) {
+
+                      getEventsPaged(host, key, uri, function(events){
+
+                        for (var i = 0; i < events.Items.length && !errorFound; i++) {
+
+                            var octoEvent = events.Items[i];
+
+                            try {
+                                var evt = mapOctoEvent(host, octoEvent);
+                            }
+                            catch (e) {
+                                errorFound = true;
+                                working = false; // Stop streaming if we get an error.
+                                Logger.error(name, e.message);
+                                complete(e);
+                                return;
+                            }
+
+                        };
+
+                        complete(null, events);
+                      });
+                    },
+                   function(complete) {
+                     getDeploymentsPaged(host, key, uri, function(deployments){
+                       done(null, deployments);
+                     });
+                   },
+                   function(complete) {
+                     getTasksPaged(host, key, uri, function(tasks){
+                       done(null, tasks);
+                     })
+                   }],
+                   function(err, events, deployments, tasks) {
+
+                   }
+                );
+
+
+
+            }
+            catch (e) {
+                callback(e);
+            }
+        },
+        function(err) {
+            // We're done streaming.
+            done(err);
+        }
+    );
+};
+
+
+function validateOctoSettings(host, apikey, onComplete){
+
+    var options = {
+        baseUrl: host,
+        uri: "api/users/me",
+        headers: {
+            'X-Octopus-ApiKey' : apikey
+        }
+    };
+
+    function callback(error, response, body) {
+        onComplete(error, response, body);
+    }
+
+    request(options, callback);
+};
+
 checkFile = function(checkpointFilePath){
 
     var checkpointFileContents = "";
@@ -97,6 +179,18 @@ checkFile = function(checkpointFilePath){
     }
     return checkpointFileContents;
 }
+
+mapOctoEvent = function (host, octoEvent){
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:event",
+        data: octoEvent, // Have Splunk index our event data as JSON, if data is an object it will be passed through JSON.stringify()
+        time: Date.parse(octoEvent.Occurred) // Set the event timestamp to the time of the commit.
+    });
+
+    return splunkEvent;
+}
+
 
 mapToEvent = function (host, octoEvent){
 
@@ -161,7 +255,7 @@ getDeploymentsPaged = function(host, apikey, uri, onComplete, onError){
 
     var options = {
         baseUrl: host,
-        uri: uri,  // e.g. api/events?skip=30&user=
+        uri: uri,  // e.g. api/deployments?skip=30&user=
         headers: {
             'X-Octopus-ApiKey' : apikey
         }
@@ -198,7 +292,7 @@ getTasksPaged = function(host, apikey, uri, onComplete, onError){
 
     var options = {
         baseUrl: host,
-        uri: uri,  // e.g. api/events?skip=30&user=
+        uri: uri,  // e.g. api/tasks?skip=30&user=
         headers: {
             'X-Octopus-ApiKey' : apikey
         }
@@ -225,104 +319,4 @@ getTasksPaged = function(host, apikey, uri, onComplete, onError){
 
     request(options, callback);
 
-};
-
-exports.streamEvents = function(name, singleInput, eventWriter, done) {
-
-    var checkpointDir = this._inputDefinition.metadata["checkpoint_dir"];
-
-    var alreadyIndexed = 0;
-    var uri = null;
-    var working = true;
-
-    Logger.info(name, modName + " Starting stream events for :");
-
-    var host = singleInput.octopusDeployHost;
-    var key = singleInput.apikey;
-
-
-    Async.whilst(
-        function() {
-            return working;
-        },
-        function(callback) {
-            try {
-
-                var checkpointFilePath  = path.join(checkpointDir, key + ".txt");
-                var checkpointFileNewContents = "";
-                var errorFound = false;
-
-                getEventsPaged(host, key, uri, function(data){
-
-                    var checkpointFileContents = checkFile(checkpointFilePath);
-
-                    for (var i = 0; i < data.Items.length && !errorFound; i++) {
-
-                        var octoEvent = data.Items[i];
-                        Logger.info(name, modName + ": Checking Event Id - " + octoEvent.Id);
-
-
-                        if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
-                            try {
-
-                                Logger.info(name, modName + ": Event Id - " + octoEvent.Id + " not found!");
-
-                                var evt = mapToEvent(host, octoEvent);
-                                eventWriter.writeEvent(evt);
-
-                                // Append this commit to the string we'll write at the end
-                                checkpointFileNewContents += octoEvent.Id + "\n";
-                                Logger.info(name, modName + ":Indexed an Octopus Deploy Event: " + octoEvent.Id);
-                            }
-                            catch (e) {
-                                errorFound = true;
-                                working = false; // Stop streaming if we get an error.
-                                Logger.error(name, e.message);
-                                fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
-                                done(e);
-                                return;
-                            }
-                        }
-                        else {
-                            Logger.info(name, modName + " :Already Indexed event: " + octoEvent.Id);
-
-                            alreadyIndexed++;
-                        }
-                    };
-
-                    fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
-
-                    if (alreadyIndexed > 0) {
-                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " already indexed Octopus Deploy events from " + host + uri);
-                    }
-
-                    alreadyIndexed = 0;
-
-
-                    if(data && data.Links && data.Links["Page.Next"]){
-                        var nextUri = data.Links["Page.Next"];
-
-                        Logger.info(name, modName +": Found more items to process :  " + nextUri);
-                        uri = nextUri;
-                    }
-                    else{
-                        Logger.info(name, modName + ": No more events!");
-
-                        working = false
-                        done();
-                    }
-
-                    callback();
-                });
-
-            }
-            catch (e) {
-                callback(e);
-            }
-        },
-        function(err) {
-            // We're done streaming.
-            done(err);
-        }
-    );
 };
