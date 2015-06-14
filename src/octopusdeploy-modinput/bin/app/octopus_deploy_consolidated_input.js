@@ -50,16 +50,6 @@ exports.validateInput = function(definition, done) {
 
     Logger.info(modName +  ": Validating Octopus Deploy settings for Host:"+ host);
 
-    // var options = getOptions(host, apikey, "api/users/me");
-    //
-    // rp(options)
-    // .then(function(response){
-    //   done();
-    // })
-    // .catch(function(error){
-    //   done(error);
-    // });
-
     getMe(host, apikey,
       function(d){
         done();},
@@ -79,7 +69,14 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
     Logger.info(name, modName + " Starting stream events for :");
 
     var host = singleInput.octopusDeployHost;
-    var key = singleInput.apikey;
+    var apikey = singleInput.apikey;
+
+    //Files for each type
+    var usersCheckpointFilePath  = getFileName(checkpointDir, apikey, "Users");
+    var eventsCheckpointFilePath  = getFileName(checkpointDir, apikey, "Events");
+    var deploymentsCheckpointFilePath  = getFileName(checkpointDir, apikey, "Deployments");
+    var tasksCheckpointFilePath  = getFileName(checkpointDir, apikey, "Tasks");
+
 
     Async.whilst(
         function() {
@@ -92,7 +89,8 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
                 var checkpointFileNewContents = "";
                 var errorFound = false;
 
-                var checkpointFileContents = checkFile(checkpointFilePath);
+
+
 
             }
             catch (e) {
@@ -105,6 +103,11 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
         }
     );
 };
+
+getFileName = function(checkpointDir, apikey, name){
+  var filepath  = path.join(checkpointDir, apikey + "_" + name + ".txt");
+  return filepath;
+}
 
 checkFile = function(checkpointFilePath){
 
@@ -139,6 +142,63 @@ getOptions = function(host, apikey, resourcePath){
 getMe = function(host, apikey, onComplete, onError){
 
   var options = getOptions(host, apikey, "api/users/me");
+
+  rp(options)
+  .then(function(response){
+    onComplete(response);
+  })
+  .catch(function(error){
+    onError(error);
+  });
+}
+
+getEventsPaged = function(host, apikey, uri, onComplete, onError){
+
+  if(!uri){
+    var options = getOptions(host, apikey, "api/events");
+  }
+  else {
+    var options = getOptions(host, apikey, uri);
+  }
+
+  rp(options)
+  .then(onComplete)
+  .catch(onError);
+
+  //TODO: Return promise
+}
+
+getAllEvents = function(host, apikey, uri, onComplete, onError){
+
+  var options = getOptions(host, apikey, "api/events");
+
+  rp(options)
+  .then(function(data){
+    
+    if(data && data.Links && data.Links["Page.Next"]){
+        var nextUri = data.Links["Page.Next"];
+
+        Logger.info(name, modName +": Found more items to process :  " + nextUri);
+        uri = nextUri;
+    }
+    else{
+        Logger.info(name, modName + ": No more events!");
+
+        working = false
+        done();
+    }
+
+
+  })
+  .catch(onError);
+
+  //TODO: Return promise
+}
+
+
+getResource = function(host, apikey, uri, onComplete, onError){
+
+  var options = getOptions(host, apikey, uri);
 
   rp(options)
   .then(function(response){
