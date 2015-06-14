@@ -50,15 +50,22 @@ exports.validateInput = function(definition, done) {
 
     Logger.info(modName +  ": Validating Octopus Deploy settings for Host:"+ host);
 
-    var options = getOptions(host, apikey, "api/users/me");
+    // var options = getOptions(host, apikey, "api/users/me");
+    //
+    // rp(options)
+    // .then(function(response){
+    //   done();
+    // })
+    // .catch(function(error){
+    //   done(error);
+    // });
 
-    rp(options)
-    .then(function(response){
-      done();
-    })
-    .catch(function(error){
-      done(error);
-    });
+    getMe(host, apikey,
+      function(d){
+        done();},
+      function(error){
+        done(error)}
+      );
 };
 
 exports.streamEvents = function(name, singleInput, eventWriter, done) {
@@ -138,6 +145,6 @@ getMe = function(host, apikey, onComplete, onError){
     onComplete(response);
   })
   .catch(function(error){
-    done(error);
+    onError(error);
   });
 }
