@@ -9,10 +9,19 @@ var Event           = ModularInputs.Event;
 var Scheme          = ModularInputs.Scheme;
 var Argument        = ModularInputs.Argument;
 var utils           = ModularInputs.utils;
+var octoApi         = require("./octopus_deploy_api.js")
 
 var modName = "OCTOPUS DEPLOY MODINPUT";
 
 exports.getScheme = function() {
+    try {
+        octoApi.getVariables();
+
+    } catch (e) {
+      Logger.info("Issue with API" + e);
+    }
+
+
     var scheme = new Scheme("Octopus Deploy Events");
 
     scheme.description = "Streams events from Octopus Deploy.";

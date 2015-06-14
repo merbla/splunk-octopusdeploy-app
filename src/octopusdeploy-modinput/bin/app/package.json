@@ -4,7 +4,9 @@
     "description": "Splunk modular input for generating events from Octopus Deploy",
     "dependencies": {
         "splunk-sdk": ">=1.4.0",
-        "request": "2.55.0"
+        "request": "2.55.0",
+        "lodash": "^3.7.0",
+        "request-promise": "0.4.2"
     },
     "author": "Matthew Erbs"
 }
