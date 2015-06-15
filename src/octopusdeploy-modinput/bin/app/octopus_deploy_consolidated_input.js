@@ -78,30 +78,32 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
     var tasksCheckpointFilePath  = getFileName(checkpointDir, apikey, "Tasks");
 
 
-    Async.whilst(
-        function() {
-            return working;
-        },
-        function(callback) {
-            try {
+    streamOctoEvents(name, singleInput, eventWriter, done, checkpointDir, eventsCheckpointFilePath);
 
-                var checkpointFilePath  = path.join(checkpointDir, key + ".txt");
-                var checkpointFileNewContents = "";
-                var errorFound = false;
+    streamOctoDeployments(name, singleInput, eventWriter, done, checkpointDir, deploymentsCheckpointFilePath);
 
-
-
-
-            }
-            catch (e) {
-                callback(e);
-            }
-        },
-        function(err) {
-            // We're done streaming.
-            done(err);
-        }
-    );
+    // Async.whilst(
+    //     function() {
+    //         return working;
+    //     },
+    //     function(callback) {
+    //         try {
+    //
+    //
+    //
+    //
+    //
+    //
+    //         }
+    //         catch (e) {
+    //             callback(e);
+    //         }
+    //     },
+    //     function(err) {
+    //         // We're done streaming.
+    //         done(err);
+    //     }
+    // );
 };
 
 getFileName = function(checkpointDir, apikey, name){
@@ -168,33 +170,21 @@ getEventsPaged = function(host, apikey, uri, onComplete, onError){
   //TODO: Return promise
 }
 
-getAllEvents = function(host, apikey, uri, onComplete, onError){
+getDeploymentsPaged = function(host, apikey, uri, onComplete, onError){
 
-  var options = getOptions(host, apikey, "api/events");
+  if(!uri){
+    var options = getOptions(host, apikey, "api/deployments");
+  }
+  else {
+    var options = getOptions(host, apikey, uri);
+  }
 
   rp(options)
-  .then(function(data){
-    
-    if(data && data.Links && data.Links["Page.Next"]){
-        var nextUri = data.Links["Page.Next"];
-
-        Logger.info(name, modName +": Found more items to process :  " + nextUri);
-        uri = nextUri;
-    }
-    else{
-        Logger.info(name, modName + ": No more events!");
-
-        working = false
-        done();
-    }
-
-
-  })
+  .then(onComplete)
   .catch(onError);
 
   //TODO: Return promise
 }
-
 
 getResource = function(host, apikey, uri, onComplete, onError){
 
@@ -208,3 +198,238 @@ getResource = function(host, apikey, uri, onComplete, onError){
     onError(error);
   });
 }
+
+mapFromOctoEvent = function (host, octoEvent){
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:event",
+        data: octoEvent,
+        time: Date.parse(octoEvent.Occurred)
+    });
+
+    return splunkEvent;
+}
+
+mapFromOctoDeployment = function (host, octoEvent){
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:deployment",
+        data: octoEvent,
+        time: Date.parse(octoEvent.Created)
+    });
+
+    return splunkEvent;
+}
+
+mapFromOctoUser = function (host, octoEvent){
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:user",
+        data: octoEvent,
+        time: Date.parse(octoEvent.Created)
+    });
+
+    return splunkEvent;
+}
+
+mapFromOctoRelease = function (host, octoEvent){
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:release",
+        data: octoEvent,
+        time: Date.parse(octoEvent.Created)
+    });
+
+    return splunkEvent;
+}
+
+mapFromOctoTask = function (host, octoEvent){
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:task",
+        data: octoEvent,
+        time: Date.parse(octoEvent.Created)
+    });
+
+    return splunkEvent;
+}
+
+
+streamOctoDeployments = function(name, singleInput, eventWriter, done, checkpointDir, checkpointFilePath) {
+
+    var uri = null;
+    var working = true;
+
+    var host = singleInput.octopusDeployHost;
+    var key = singleInput.apikey;
+
+    Async.whilst(
+        function() {
+            return working;
+        },
+        function(callback) {
+            try {
+                var alreadyIndexed= 0;
+                var checkpointFileNewContents = "";
+                var errorFound = false;
+
+                getDeploymentsPaged(host, key, uri, function(data){
+
+                    var checkpointFileContents = checkFile(checkpointFilePath);
+
+                    for (var i = 0; i < data.Items.length && !errorFound; i++) {
+
+                        var octoEvent = data.Items[i];
+
+                        Logger.info(name, modName + ": Checking for Id - " + octoEvent.Id);
+
+                        if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
+                            try {
+
+                                var evt = mapFromOctoDeployment(host, octoEvent);
+                                eventWriter.writeEvent(evt);
+
+                                checkpointFileNewContents += octoEvent.Id + "\n";
+                                Logger.info(name, modName + ":Indexed an Octopus Deploy Deployment: " + octoEvent.Id);
+                            }
+                            catch (e) {
+                                errorFound = true;
+                                working = false; // Stop streaming if we get an error.
+                                Logger.error(name, e.message);
+                                fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+                                done(e);
+                                return;
+                            }
+                        }
+                        else {
+                            Logger.info(name, modName + " :Already Indexed Id: " + octoEvent.Id);
+                            alreadyIndexed++;
+                        }
+                    };
+
+                    fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+
+                    if (alreadyIndexed > 0) {
+                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed  from " + host + uri);
+                    }
+
+                    alreadyIndexed = 0;
+
+
+                    if(data && data.Links && data.Links["Page.Next"]){
+                        var nextUri = data.Links["Page.Next"];
+
+                        Logger.info(name, modName +": Found more items to process :  " + nextUri);
+                        uri = nextUri;
+                    }
+                    else{
+                        Logger.info(name, modName + ": No more deployments!");
+
+                        working = false
+                        done();
+                    }
+
+                    callback();
+                });
+
+            }
+            catch (e) {
+                callback(e);
+            }
+        },
+        function(err) {
+            // We're done streaming.
+            done(err);
+        }
+    );
+};
+
+streamOctoEvents = function(name, singleInput, eventWriter, done, checkpointDir, checkpointFilePath) {
+
+    var uri = null;
+    var working = true;
+
+    var host = singleInput.octopusDeployHost;
+    var key = singleInput.apikey;
+
+    Async.whilst(
+        function() {
+            return working;
+        },
+        function(callback) {
+            try {
+
+                  var alreadyIndexed= 0;
+                var checkpointFileNewContents = "";
+                var errorFound = false;
+
+                getEventsPaged(host, key, uri, function(data){
+
+                    var checkpointFileContents = checkFile(checkpointFilePath);
+
+                    for (var i = 0; i < data.Items.length && !errorFound; i++) {
+
+                        var octoEvent = data.Items[i];
+
+                        Logger.info(name, modName + ": Checking for Id - " + octoEvent.Id);
+
+                        if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
+                            try {
+
+                                var evt = mapFromOctoEvent(host, octoEvent);
+                                eventWriter.writeEvent(evt);
+
+                                checkpointFileNewContents += octoEvent.Id + "\n";
+                                Logger.info(name, modName + ":Indexed an Octopus Deploy Deployment: " + octoEvent.Id);
+                            }
+                            catch (e) {
+                                errorFound = true;
+                                working = false; // Stop streaming if we get an error.
+                                Logger.error(name, e.message);
+                                fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+                                done(e);
+                                return;
+                            }
+                        }
+                        else {
+                            Logger.info(name, modName + " :Already Indexed Id: " + octoEvent.Id);
+                            alreadyIndexed++;
+                        }
+                    };
+
+                    fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+
+                    if (alreadyIndexed > 0) {
+                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed  from " + host + uri);
+                    }
+
+                    alreadyIndexed = 0;
+
+
+                    if(data && data.Links && data.Links["Page.Next"]){
+                        var nextUri = data.Links["Page.Next"];
+
+                        Logger.info(name, modName +": Found more items to process :  " + nextUri);
+                        uri = nextUri;
+                    }
+                    else{
+                        Logger.info(name, modName + ": No more deployments!");
+
+                        working = false
+                        done();
+                    }
+
+                    callback();
+                });
+
+            }
+            catch (e) {
+                callback(e);
+            }
+        },
+        function(err) {
+            // We're done streaming.
+            done(err);
+        }
+    );
+};
