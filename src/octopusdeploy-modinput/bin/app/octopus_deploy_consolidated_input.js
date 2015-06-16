@@ -82,6 +82,9 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
 
     streamOctoDeployments(name, singleInput, eventWriter, done, checkpointDir, deploymentsCheckpointFilePath);
 
+    streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, tasksCheckpointFilePath, getTasksPaged, mapFromOctoTask);
+
+
     // Async.whilst(
     //     function() {
     //         return working;
@@ -186,6 +189,22 @@ getDeploymentsPaged = function(host, apikey, uri, onComplete, onError){
   //TODO: Return promise
 }
 
+getTasksPaged = function(host, apikey, uri, onComplete, onError){
+
+  if(!uri){
+    var options = getOptions(host, apikey, "api/tasks");
+  }
+  else {
+    var options = getOptions(host, apikey, uri);
+  }
+
+  rp(options)
+  .then(onComplete)
+  .catch(onError);
+
+  //TODO: Return promise
+}
+
 getResource = function(host, apikey, uri, onComplete, onError){
 
   var options = getOptions(host, apikey, uri);
@@ -248,12 +267,191 @@ mapFromOctoTask = function (host, octoEvent){
         stanza: host,
         sourcetype: "octopus:task",
         data: octoEvent,
-        time: Date.parse(octoEvent.Created)
+        time: Date.parse(octoEvent.CompletedTime)
     });
 
     return splunkEvent;
 }
 
+streamOctoStuff  = function(name, singleInput, eventWriter, done, checkpointDir, checkpointFilePath, getIt, mapIt) {
+
+    var uri = null;
+    var working = true;
+
+    var host = singleInput.octopusDeployHost;
+    var key = singleInput.apikey;
+
+    Async.whilst(
+        function() {
+            return working;
+        },
+        function(callback) {
+            try {
+                var alreadyIndexed= 0;
+                var checkpointFileNewContents = "";
+                var errorFound = false;
+
+                getIt(host, key, uri, function(data){
+
+                    var checkpointFileContents = checkFile(checkpointFilePath);
+
+                    for (var i = 0; i < data.Items.length && !errorFound; i++) {
+
+                        var octoEvent = data.Items[i];
+
+                        Logger.info(name, modName + ": Checking for Id - " + octoEvent.Id);
+
+                        if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
+                            try {
+
+                                var evt = mapIt(host, octoEvent);
+                                eventWriter.writeEvent(evt);
+                                Logger.info(name, modName + ": Event - " + evt);
+
+
+                                checkpointFileNewContents += octoEvent.Id + "\n";
+                                Logger.info(name, modName + ": Indexed " + octoEvent.Id);
+                            }
+                            catch (e) {
+                                errorFound = true;
+                                working = false; // Stop streaming if we get an error.
+                                Logger.error(name, e.message);
+                                fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+                                done(e);
+                                return;
+                            }
+                        }
+                        else {
+                            Logger.info(name, modName + " : Already Indexed Id " + octoEvent.Id);
+                            alreadyIndexed++;
+                        }
+                    };
+
+                    fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+
+                    if (alreadyIndexed > 0) {
+                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed  from " + host + uri);
+                    }
+
+                    alreadyIndexed = 0;
+
+
+                    if(data && data.Links && data.Links["Page.Next"]){
+                        var nextUri = data.Links["Page.Next"];
+
+                        Logger.info(name, modName +": Found more items to process :  " + nextUri);
+                        uri = nextUri;
+                    }
+                    else{
+                        Logger.info(name, modName + ": Nothing more to index!");
+
+                        working = false
+                        done();
+                    }
+
+                    callback();
+                });
+
+            }
+            catch (e) {
+                callback(e);
+            }
+        },
+        function(err) {
+            // We're done streaming.
+            done(err);
+        }
+    );
+};
+
+streamOctoTasks = function(name, singleInput, eventWriter, done, checkpointDir, checkpointFilePath) {
+
+    var uri = null;
+    var working = true;
+
+    var host = singleInput.octopusDeployHost;
+    var key = singleInput.apikey;
+
+    Async.whilst(
+        function() {
+            return working;
+        },
+        function(callback) {
+            try {
+                var alreadyIndexed= 0;
+                var checkpointFileNewContents = "";
+                var errorFound = false;
+
+                getTasksPaged(host, key, uri, function(data){
+
+                    var checkpointFileContents = checkFile(checkpointFilePath);
+
+                    for (var i = 0; i < data.Items.length && !errorFound; i++) {
+
+                        var octoEvent = data.Items[i];
+
+                        Logger.info(name, modName + ": Checking for Id - " + octoEvent.Id);
+
+                        if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
+                            try {
+
+                                var evt = mapFromOctoTask(host, octoEvent);
+                                eventWriter.writeEvent(evt);
+
+                                checkpointFileNewContents += octoEvent.Id + "\n";
+                                Logger.info(name, modName + ": Indexed " + octoEvent.Id);
+                            }
+                            catch (e) {
+                                errorFound = true;
+                                working = false; // Stop streaming if we get an error.
+                                Logger.error(name, e.message);
+                                fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+                                done(e);
+                                return;
+                            }
+                        }
+                        else {
+                            Logger.info(name, modName + " : Already Indexed Id " + octoEvent.Id);
+                            alreadyIndexed++;
+                        }
+                    };
+
+                    fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+
+                    if (alreadyIndexed > 0) {
+                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed  from " + host + uri);
+                    }
+
+                    alreadyIndexed = 0;
+
+
+                    if(data && data.Links && data.Links["Page.Next"]){
+                        var nextUri = data.Links["Page.Next"];
+
+                        Logger.info(name, modName +": Found more items to process :  " + nextUri);
+                        uri = nextUri;
+                    }
+                    else{
+                        Logger.info(name, modName + ": Nothing more to index!");
+
+                        working = false
+                        done();
+                    }
+
+                    callback();
+                });
+
+            }
+            catch (e) {
+                callback(e);
+            }
+        },
+        function(err) {
+            // We're done streaming.
+            done(err);
+        }
+    );
+};
 
 streamOctoDeployments = function(name, singleInput, eventWriter, done, checkpointDir, checkpointFilePath) {
 
@@ -290,7 +488,7 @@ streamOctoDeployments = function(name, singleInput, eventWriter, done, checkpoin
                                 eventWriter.writeEvent(evt);
 
                                 checkpointFileNewContents += octoEvent.Id + "\n";
-                                Logger.info(name, modName + ":Indexed an Octopus Deploy Deployment: " + octoEvent.Id);
+                                Logger.info(name, modName + ":Indexed " + octoEvent.Id);
                             }
                             catch (e) {
                                 errorFound = true;
@@ -302,7 +500,7 @@ streamOctoDeployments = function(name, singleInput, eventWriter, done, checkpoin
                             }
                         }
                         else {
-                            Logger.info(name, modName + " :Already Indexed Id: " + octoEvent.Id);
+                            Logger.info(name, modName + " : Already Indexed Id: " + octoEvent.Id);
                             alreadyIndexed++;
                         }
                     };
@@ -323,7 +521,7 @@ streamOctoDeployments = function(name, singleInput, eventWriter, done, checkpoin
                         uri = nextUri;
                     }
                     else{
-                        Logger.info(name, modName + ": No more deployments!");
+                        Logger.info(name, modName + ": Nothing more to index!");
 
                         working = false
                         done();
@@ -380,7 +578,7 @@ streamOctoEvents = function(name, singleInput, eventWriter, done, checkpointDir,
                                 eventWriter.writeEvent(evt);
 
                                 checkpointFileNewContents += octoEvent.Id + "\n";
-                                Logger.info(name, modName + ":Indexed an Octopus Deploy Deployment: " + octoEvent.Id);
+                                Logger.info(name, modName + ":Indexed " + octoEvent.Id);
                             }
                             catch (e) {
                                 errorFound = true;
@@ -400,7 +598,7 @@ streamOctoEvents = function(name, singleInput, eventWriter, done, checkpointDir,
                     fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
 
                     if (alreadyIndexed > 0) {
-                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed  from " + host + uri);
+                        Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed from " + host + uri);
                     }
 
                     alreadyIndexed = 0;
