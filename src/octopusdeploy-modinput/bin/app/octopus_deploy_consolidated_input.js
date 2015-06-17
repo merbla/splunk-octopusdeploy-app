@@ -77,12 +77,14 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
     var deploymentsCheckpointFilePath  = getFileName(checkpointDir, apikey, "Deployments");
     var tasksCheckpointFilePath  = getFileName(checkpointDir, apikey, "Tasks");
     var releasesCheckpointFilePath  = getFileName(checkpointDir, apikey, "Releases");
+    var environmentsCheckpointFilePath  = getFileName(checkpointDir, apikey, "Environments");
 
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, eventsCheckpointFilePath, getEventsPaged, mapFromOctoEvent);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, deploymentsCheckpointFilePath, getDeploymentsPaged, mapFromOctoDeployment);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, releasesCheckpointFilePath, getReleasesPaged, mapFromOctoRelease);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, tasksCheckpointFilePath, getTasksPaged, mapFromOctoTask);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, usersCheckpointFilePath, getUsersPaged, mapFromOctoUser);
+    streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, environmentsCheckpointFilePath, getEnvironmentsPaged, mapFromOctoEnvironment);
 
 };
 
@@ -214,6 +216,22 @@ getTasksPaged = function(host, apikey, uri, onComplete, onError){
   //TODO: Return promise
 }
 
+getEnvironmentsPaged = function(host, apikey, uri, onComplete, onError){
+
+  if(!uri){
+    var options = getOptions(host, apikey, "api/environments");
+  }
+  else {
+    var options = getOptions(host, apikey, uri);
+  }
+
+  rp(options)
+  .then(onComplete)
+  .catch(onError);
+
+  //TODO: Return promise
+}
+
 getResource = function(host, apikey, uri, onComplete, onError){
 
   var options = getOptions(host, apikey, uri);
@@ -249,9 +267,22 @@ mapFromOctoDeployment = function (host, octoEvent){
     return splunkEvent;
 }
 
+mapFromOctoEnvironment = function (host, octoEvent){
+
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:environment",
+        data: octoEvent,
+        time: Date.parse(octoEvent.LastModifiedOn)
+    });
+
+    return splunkEvent;
+}
+
+
 mapFromOctoUser = function (host, octoEvent){
 
-    var date = octoEvent.LastModifiedOn
+    var date = Date.parse(octoEvent.LastModifiedOn);
 
     if(octoEvent.IsRequestor){
       date = new Date();
@@ -261,7 +292,7 @@ mapFromOctoUser = function (host, octoEvent){
         stanza: host,
         sourcetype: "octopus:user",
         data: octoEvent,
-        time: Date.parse(date)
+        time: date
     });
 
     return splunkEvent;
