@@ -76,37 +76,14 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
     var eventsCheckpointFilePath  = getFileName(checkpointDir, apikey, "Events");
     var deploymentsCheckpointFilePath  = getFileName(checkpointDir, apikey, "Deployments");
     var tasksCheckpointFilePath  = getFileName(checkpointDir, apikey, "Tasks");
+    var releasesCheckpointFilePath  = getFileName(checkpointDir, apikey, "Releases");
 
-
-    streamOctoEvents(name, singleInput, eventWriter, done, checkpointDir, eventsCheckpointFilePath);
-
-    streamOctoDeployments(name, singleInput, eventWriter, done, checkpointDir, deploymentsCheckpointFilePath);
-
+    streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, eventsCheckpointFilePath, getEventsPaged, mapFromOctoEvent);
+    streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, deploymentsCheckpointFilePath, getDeploymentsPaged, mapFromOctoDeployment);
+    streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, releasesCheckpointFilePath, getReleasesPaged, mapFromOctoRelease);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, tasksCheckpointFilePath, getTasksPaged, mapFromOctoTask);
+    streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, usersCheckpointFilePath, getUsersPaged, mapFromOctoUser);
 
-
-    // Async.whilst(
-    //     function() {
-    //         return working;
-    //     },
-    //     function(callback) {
-    //         try {
-    //
-    //
-    //
-    //
-    //
-    //
-    //         }
-    //         catch (e) {
-    //             callback(e);
-    //         }
-    //     },
-    //     function(err) {
-    //         // We're done streaming.
-    //         done(err);
-    //     }
-    // );
 };
 
 getFileName = function(checkpointDir, apikey, name){
@@ -189,6 +166,38 @@ getDeploymentsPaged = function(host, apikey, uri, onComplete, onError){
   //TODO: Return promise
 }
 
+getReleasesPaged = function(host, apikey, uri, onComplete, onError){
+
+  if(!uri){
+    var options = getOptions(host, apikey, "api/releases");
+  }
+  else {
+    var options = getOptions(host, apikey, uri);
+  }
+
+  rp(options)
+  .then(onComplete)
+  .catch(onError);
+
+  //TODO: Return promise
+}
+
+getUsersPaged = function(host, apikey, uri, onComplete, onError){
+
+  if(!uri){
+    var options = getOptions(host, apikey, "api/users");
+  }
+  else {
+    var options = getOptions(host, apikey, uri);
+  }
+
+  rp(options)
+  .then(onComplete)
+  .catch(onError);
+
+  //TODO: Return promise
+}
+
 getTasksPaged = function(host, apikey, uri, onComplete, onError){
 
   if(!uri){
@@ -241,11 +250,18 @@ mapFromOctoDeployment = function (host, octoEvent){
 }
 
 mapFromOctoUser = function (host, octoEvent){
+
+    var date = octoEvent.LastModifiedOn
+
+    if(octoEvent.IsRequestor){
+      date = new Date();
+    }
+
     var splunkEvent = new Event({
         stanza: host,
         sourcetype: "octopus:user",
         data: octoEvent,
-        time: Date.parse(octoEvent.Created)
+        time: Date.parse(date)
     });
 
     return splunkEvent;
@@ -256,7 +272,7 @@ mapFromOctoRelease = function (host, octoEvent){
         stanza: host,
         sourcetype: "octopus:release",
         data: octoEvent,
-        time: Date.parse(octoEvent.Created)
+        time: Date.parse(octoEvent.Assembled)
     });
 
     return splunkEvent;
