@@ -163,7 +163,7 @@ getEventsPaged = function(host, apikey, uri, onComplete, onError){
 getProjectsPaged = function(host, apikey, uri, onComplete, onError){
 
   if(!uri){
-    var options = getOptions(host, apikey, "api/machines");
+    var options = getOptions(host, apikey, "api/projects");
   }
   else {
     var options = getOptions(host, apikey, uri);
@@ -179,7 +179,7 @@ getProjectsPaged = function(host, apikey, uri, onComplete, onError){
 getMachinesPaged = function(host, apikey, uri, onComplete, onError){
 
   if(!uri){
-    var options = getOptions(host, apikey, "api/projects");
+    var options = getOptions(host, apikey, "api/machines");
   }
   else {
     var options = getOptions(host, apikey, uri);

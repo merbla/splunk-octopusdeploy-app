@@ -14,6 +14,8 @@ Once that is done, you can search using the following source types:
  - Deployments : `octopus:deployment`
  - Releases : `octopus:release`
  - Environments : `octopus:environment`
+ - Projects : `octopus:project`
+ - Machines : `octopus:machine`
 
 
 ###Resources

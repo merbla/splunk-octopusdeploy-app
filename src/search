@@ -1,3 +1,45 @@
+#Deployment by environment
+sourcetype="octopus:deployment"
+| rename Id as DeploymentId
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName ]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName ]
+| timechart count(DeploymentId) by EnvironmentName
+
+
+#Server Health Check
+
+sourcetype="octopus:task" Name=Health
+
+
+
+
+
+
+
+
+sourcetype="octopus:deployment"
+| rename Id as DeploymentId
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId ]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId ]
+
+
+sourcetype="octopus:deployment"
+| rename Id as DeploymentId
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName ]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName ]
+| timechart count(DeploymentId) by EnvironmentName
+
+
+
+sourcetype="octopus:deployment"
+| rename Id as DeploymentId
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName ]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName ]
+| join MachineId [ search sourcetype="octopus:machine" | rename Id as MachineId, Name as MachineName ]
+| timechart count(DeploymentId) by EnvironmentName
+
+
+
 
 #Deployments and releases
 
@@ -8,7 +50,7 @@ sourcetype="octopus:deployment" OR sourcetype="octopus:deployment"
 | stats count(DeploymentId) as "Deployments" by  EnvironmentId, Hour
 | table EnvironmentId Hour Deployments
 
-
+sourcetype="octopus:environment" | rename Id as EnvironmentId | fields EnvironmentId Name
 
 
 sourcetype="octopus:deployment" OR sourcetype="octopus:deployment"
