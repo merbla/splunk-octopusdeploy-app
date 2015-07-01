@@ -7,9 +7,10 @@ sourcetype="octopus:deployment"
 
 
 #Server Health Check
-
 sourcetype="octopus:task" Name=Health
 
+#Break Up of Deployment Machines
+sourcetype="octopus:machine" | fields "Roles{}" | stats count by  "Roles{}"
 
 
 
