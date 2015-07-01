@@ -1,6 +1,6 @@
 {
     "name": "octopus_deploy_modular_input",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "description": "Splunk modular input for generating events from Octopus Deploy",
     "dependencies": {
         "splunk-sdk": ">=1.4.0",

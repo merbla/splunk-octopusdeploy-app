@@ -78,13 +78,21 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
     var tasksCheckpointFilePath  = getFileName(checkpointDir, apikey, "Tasks");
     var releasesCheckpointFilePath  = getFileName(checkpointDir, apikey, "Releases");
     var environmentsCheckpointFilePath  = getFileName(checkpointDir, apikey, "Environments");
+    var projectsCheckpointFilePath  = getFileName(checkpointDir, apikey, "Projects");
+    var machinesCheckpointFilePath  = getFileName(checkpointDir, apikey, "Machines");
 
+    //Events that we only want in index once
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, eventsCheckpointFilePath, getEventsPaged, mapFromOctoEvent);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, deploymentsCheckpointFilePath, getDeploymentsPaged, mapFromOctoDeployment);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, releasesCheckpointFilePath, getReleasesPaged, mapFromOctoRelease);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, tasksCheckpointFilePath, getTasksPaged, mapFromOctoTask);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, usersCheckpointFilePath, getUsersPaged, mapFromOctoUser);
     streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, environmentsCheckpointFilePath, getEnvironmentsPaged, mapFromOctoEnvironment);
+    streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, projectsCheckpointFilePath, getProjectsPaged, mapFromOctoProject);
+    streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, machinesCheckpointFilePath, getMachinesPaged, mapFromOctoMachine);
+
+    //Status like reports that change over time (Dashboard etc)
+
 
 };
 
@@ -140,6 +148,38 @@ getEventsPaged = function(host, apikey, uri, onComplete, onError){
 
   if(!uri){
     var options = getOptions(host, apikey, "api/events");
+  }
+  else {
+    var options = getOptions(host, apikey, uri);
+  }
+
+  rp(options)
+  .then(onComplete)
+  .catch(onError);
+
+  //TODO: Return promise
+}
+
+getProjectsPaged = function(host, apikey, uri, onComplete, onError){
+
+  if(!uri){
+    var options = getOptions(host, apikey, "api/machines");
+  }
+  else {
+    var options = getOptions(host, apikey, uri);
+  }
+
+  rp(options)
+  .then(onComplete)
+  .catch(onError);
+
+  //TODO: Return promise
+}
+
+getMachinesPaged = function(host, apikey, uri, onComplete, onError){
+
+  if(!uri){
+    var options = getOptions(host, apikey, "api/projects");
   }
   else {
     var options = getOptions(host, apikey, uri);
@@ -245,12 +285,35 @@ getResource = function(host, apikey, uri, onComplete, onError){
   });
 }
 
+
+mapFromOctoProject = function (host, octoEvent){
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:project",
+        data: octoEvent,
+        time: Date.parse(octoEvent.LastModifiedOn)
+    });
+
+    return splunkEvent;
+}
+
 mapFromOctoEvent = function (host, octoEvent){
     var splunkEvent = new Event({
         stanza: host,
         sourcetype: "octopus:event",
         data: octoEvent,
         time: Date.parse(octoEvent.Occurred)
+    });
+
+    return splunkEvent;
+}
+
+mapFromOctoMachine = function (host, octoEvent){
+    var splunkEvent = new Event({
+        stanza: host,
+        sourcetype: "octopus:machine",
+        data: octoEvent,
+        time: Date.parse(octoEvent.LastModifiedOn)
     });
 
     return splunkEvent;

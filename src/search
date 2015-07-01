@@ -1,0 +1,42 @@
+
+#Deployments and releases
+
+sourcetype="octopus:deployment" OR sourcetype="octopus:deployment"
+| eval Hour = strftime(_time,"%H")
+| rename Id as DeploymentId, TaskId as ServerTaskId
+| fields timestamp, ReleaseId, DeploymentId, Name, EnvironmentId, ServerTaskId, ProjectId, Hour
+| stats count(DeploymentId) as "Deployments" by  EnvironmentId, Hour
+| table EnvironmentId Hour Deployments
+
+
+
+
+sourcetype="octopus:deployment" OR sourcetype="octopus:deployment"
+| rename Id as DeploymentId, TaskId as ServerTaskId| fields timestamp, ReleaseId, DeploymentId, Name, EnvironmentId, ServerTaskId, ProjectId
+
+sourcetype="octopus:deployment" OR sourcetype="octopus:deployment"
+| rename Id as DeploymentId, TaskId as ServerTaskId | fields ReleaseId, DeploymentId, Name, EnvironmentId, ServerTaskId, ProjectId
+
+
+sourcetype="octopus:deployment" OR sourcetype="octopus:deployment" OR sourcetype="octopus:task"  ReleaseId="releases-140"
+| rename Id as DeploymentId
+
+
+
+sourcetype="octopus:deployment" OR sourcetype="octopus:deployment"
+| rename Id as DeploymentId
+| fields timestamp, ReleaseId, DeploymentId, Name, EnvironmentId, Completed, StartTime, CompletedTime, QueueTime, IsCompleted
+
+#Tasks
+sourcetype="octopus:task" | rename Id as TaskId
+
+
+
+
+#Server Health
+
+source="octopus_deploy://Local Octopus Deploy" Name=Health
+#Duration, Id, State, Health
+
+
+sourcetype="octopus:task" Name=Health | timechart span=1d count by State
