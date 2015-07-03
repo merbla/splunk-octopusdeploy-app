@@ -33,16 +33,128 @@ sourcetype="octopus:event" |  timechart span=1week count by Username
 sourcetype="octopus:event" |  timechart span=1week count by Username
 
 
+#Longest Deployments (Top 5) By Release
+sourcetype="octopus:deployment"
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ]
+| join ReleaseId [ search sourcetype="octopus:release" | rename Id as ReleaseId, Version as ReleaseVersion]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName]
+| sort -EnvironmentLastModifiedBy
+| transaction ReleaseId
+| top 5 duration, ProjectName, ReleaseVersion
+| eval DurationInHours = duration/60/60
+| eval DurationInDays = DurationInHours/24
+| sort -DurationInHours
+
+#DeploymentOutcome by Project
+
+
+sourcetype="octopus:deployment"
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ]
+| join ReleaseId [ search sourcetype="octopus:release" | rename Id as ReleaseId, Version as ReleaseVersion]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName]
+| join TaskId [ search sourcetype="octopus:task"
+| rename Id as TaskId]
+| chart count(TaskId) by ProjectName, State
+
+
+#Process Churn
+
+sourcetype="octopus:event" | stats count(Id) by Category
+
+#Deployment Time by Project
+
+#Deployment Time by Environment
+
+#RelationShips Fun
+http://vowl.visualdataweb.org/webvowl/
+
+
+
+sourcetype="octopus:deployment"
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ]
+| join ReleaseId [ search sourcetype="octopus:release" | rename Id as ReleaseId, Version as ReleaseVersion]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName]
+| join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
+
+
+
+
+sourcetype="octopus:deployment"
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ]
+| join ReleaseId [ search sourcetype="octopus:release" | rename Id as ReleaseId, Version as ReleaseVersion]
+| join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId, Duration as TaskDuration]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName]
+| transaction
+
+
+
+
+
+
+sourcetype="octopus:task"
+| rename Id as TaskId, Duration as TaskDuration
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ]
+| join ReleaseId [ search sourcetype="octopus:release" | rename Id as ReleaseId, Version as ReleaseVersion]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName]
+| search Name=Deploy | chart count(Id) by Duration
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 
 sourcetype="octopus:deployment"
-| rename Id as DeploymentId
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ]
+| join ReleaseId [ search sourcetype="octopus:release" | rename Id as ReleaseId, Version as ReleaseVersion]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName]
+| sort -EnvironmentLastModifiedBy
+| transaction ReleaseId | sort -duration | top 5 duration, ProjectName, ReleaseVersion
+
+
+sourcetype="octopus:deployment"
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ]
+| join ReleaseId [ search sourcetype="octopus:release" | rename Id as ReleaseId, Version as ReleaseVersion]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName]
+| sort -EnvironmentLastModifiedBy
+| transaction ReleaseId
+| table ProjectName, ReleaseVersion, EnvironmentName, duration
+
+
+
+
+
+
+| transaction host startswith=4648 endswith=4624 maxevents=2
+| table host duration _time
+
+sourcetype="octopus:deployment" ReleaseId="releases-162" | transaction Id
+
+
+
+startswith=(segmentID=0 phase=mapStart) endswith=(phase=integrationEnd)
+
+sourcetype="octopus:deployment"
 | join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName ]
-| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName ]
-| eval Hour = strftime(_time,"%H")
+| transaction ReleaseId
+| table ReleaseId, EnvironmentId, duration
+
+
+
+  sourcetype="octopus:deployment"
+  | rename Id as DeploymentId
+  | join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName ]
+  | join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName ]
+  | eval Hour = strftime(_time,"%H")
 
 
 sourcetype="octopus:deployment"
