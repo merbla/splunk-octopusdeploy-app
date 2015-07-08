@@ -1,0 +1,14 @@
+Images
+
+$SPLUNK_HOME/etc/apps/<app_name>/static/appIcon.png 36x36px
+$SPLUNK_HOME/etc/apps/<app_name>/static/appIcon_2x.png 72x72px
+
+$SPLUNK_HOME/etc/apps/<app_name>/static/appIconAlt.png 36x36px
+$SPLUNK_HOME/etc/apps/<app_name>/static/appIconAlt_2x.png 72x72px
+
+$SPLUNK_HOME/etc/apps/<app_name>/static/appLogo.png 160x40
+$SPLUNK_HOME/etc/apps/<app_name>/static/appLogo_2x.png 320x80
+
+
+
+ 

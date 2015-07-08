@@ -1,9 +1,9 @@
 <form script=""
       stylesheet="">
-    <label>Summary</label>
+    <label>Usage</label>
     <row>
       <panel>
-         
+
       </panel>
     </row>
 </form>

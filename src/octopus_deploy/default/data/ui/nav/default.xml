@@ -1,3 +1,10 @@
 <nav color="2E92DF">
-    <view name="summary" default="true"/>
+  <view name="Overview" default="true"/>
+  <view name="health" />
+  
+  <!-- <view name="summary" default="true"/>
+  <view name="usage" />
+
+   -->
+<!-- <view name="Overview" default="true"/> -->
 </nav>
