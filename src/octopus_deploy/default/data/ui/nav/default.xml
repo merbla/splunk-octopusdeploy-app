@@ -1,5 +1,6 @@
 <nav color="2E92DF">
-  <view name="summary" default="true"/>
+  <view name="overview" default="true"/>
+  <view name="summary" />
 
   <!-- <view name="Overview" default="true"/>
   <view name="health" /> -->
