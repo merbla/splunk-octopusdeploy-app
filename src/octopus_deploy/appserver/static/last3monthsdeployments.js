@@ -15,20 +15,13 @@ require([
 
   });
 
-  // var tableManagerid = mvc.Components.get('last3monthsdeploymentsTable').settings.get('managerid');
-
   var chart = new D3ChartView({
     "id": "last3monthsdeployments",
     //"managerid": tableManagerid,
     "managerid": mainSearch.id,
-    "type": "linePlusBarChart",
+    "type": "stackedAreaChart",
     "el": $('#last3monthsdeployments')
   }).render();
-
-
-  // Total Deployments one side, Total Releases the other
-
-
 
   chart.settings.set("setup", function(chart) {
     chart.margin({
@@ -46,34 +39,12 @@ require([
     });
 
     chart.xAxis.rotateLabels(45);
+
+    chart.yAxis.axisLabel('No. of Deployments');
+
+    chart.yAxis.tickFormat(d3.format(',.2f'));
+
+
   });
-
-  // var SearchManager = require("splunkjs/mvc/searchmanager");
-  //
-  // var mainSearch = new SearchManager({
-  //   id: "last3monthsdeploymentsSearch",
-  //   search: "sourcetype=octopus:deployment | rename Id as DeploymentId | join EnvironmentId [ search sourcetype=octopus:environment | rename Id as EnvironmentId, Name as EnvironmentName ] | timechart count(DeploymentId) span=1month by EnvironmentName",
-  //
-  // });
-
-
-  // var mainSearch = splunkjs.mvc.Components.getInstance(tableManagerid);
-  // var mai  nSearch = splunkjs.mvc.Components.getInstance("last3monthsdeploymentsSearch");
-  var myResults = mainSearch.data("preview", {});
-
-  myResults.on("data", function() {
-    // The full data object
-    console.log(myResults.data());
-
-    // Indicates whether the results model has data
-    console.log("Has data? ", myResults.hasData());
-
-    // The results rows
-    console.log("Data (rows): ", myResults.data().rows);
-
-    // The Backbone collection
-    console.log("Backbone collection: ", myResults.collection());
-  });
-
 
 });

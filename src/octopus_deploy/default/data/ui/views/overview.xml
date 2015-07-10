@@ -1,16 +1,32 @@
-<dashboard script="autodiscover.js, last3monthsdeployments.js" stylesheet="octopusdeploy.css">
+<dashboard script="autodiscover.js, last3monthsdeployments.js, activeProjectsByDeployments.js" stylesheet="octopusdeploy.css">
   <label>Overview</label>
-  <row>
+  <row >
     <html>
       <div>
         Add some info/description
       </div>
     </html>
   </row>
-  <row grouping="2">
+  <row>
+    <panel>
+      <html>
+        <h2>Last 3 Months deployments</h2>
+        <div id="last3monthsdeployments"/>
+      </html>
+
+    </panel>
+    <panel>
+      <html>
+        <h2>Active Projects</h2>
+        <div id="activeProjectsByDeployments"/>
+      </html>
+    </panel>
+  </row>
+  <row >
     <html>
-      <h2>Last 3 Months deployments</h2>
-      <div id="last3monthsdeployments"/>
+      <div>
+        Add some info/description
+      </div>
     </html>
   </row>
 

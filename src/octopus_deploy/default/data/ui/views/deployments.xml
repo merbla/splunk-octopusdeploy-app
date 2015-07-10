@@ -1,0 +1,17 @@
+<dashboard script="" stylesheet="octopusdeploy.css">
+  <label>Deployments</label>
+  <row>
+    <html>
+      <div>
+        Deployment Info
+      </div>
+    </html>
+  </row>
+  <row grouping="2">
+    <html>
+      <h2>Last 3 Months deployments</h2>
+      <div id="last3monthsdeployments"/>
+    </html>
+  </row>
+
+</dashboard>

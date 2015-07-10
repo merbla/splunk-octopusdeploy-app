@@ -1,0 +1,11 @@
+<dashboard script="autodiscover.js, last3monthsdeployments.js" stylesheet="octopusdeploy.css">
+  <label>About</label>
+  <row>
+    <html>
+      <div>
+        About Info
+      </div>
+    </html>
+  </row>
+
+</dashboard>
