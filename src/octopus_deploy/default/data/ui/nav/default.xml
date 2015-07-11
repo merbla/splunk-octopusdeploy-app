@@ -3,4 +3,5 @@
   <view name="deployments" />
   <view name="audit" />
   <view name="about" />
+  <view name="play" />
 </nav>
