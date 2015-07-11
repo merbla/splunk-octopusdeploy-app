@@ -2,28 +2,26 @@ require.config({
   paths: {
     'lodash': '//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min',
   },
+  shim: {
+      "lodash": {
+          deps: []
+      }
+  },
   enforceDefine: true
 });
 
-//"//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min"
-//
-
 
 require([
-  'lodash',
+  'underscore',
   'jquery',
   'splunkjs/mvc/utils',
   'splunkjs/mvc',
-  'splunkjs/mvc/d3chart/d3chartview',
   'util/moment',
   "splunkjs/ready!",
+  "splunkjs/mvc/simplexml/ready!",
   "splunkjs/mvc/searchmanager",
-], function(_, $, utils, mvc, D3ChartView, moment, ready, searchManager) {
-
-
-  var c = _.chunk(['a', 'b', 'c', 'd'], 2);
-
-  console.log(c);
+  "lodash"
+], function(_, $, utils, mvc, moment, ready, simpleXmlReady, searchManager, _l) {
 
 
   var mainSearch = new searchManager({
@@ -31,21 +29,16 @@ require([
     search: "sourcetype=octopus:deployment | rename Id as DeploymentId | join EnvironmentId [ search sourcetype=octopus:environment | rename Id as EnvironmentId, Name as EnvironmentName ] | join ProjectId [ search sourcetype=octopus:project | rename Id as ProjectId, Name as ProjectName ] | timechart count(DeploymentId)  span=1day by ProjectName",
   });
 
-  var myResults = mainSearch.data("preview", {});
 
-  myResults.on("data", function() {
-    // The full data object
-    console.log(myResults.data());
+  var results = mainSearch.data("preview", {});
 
-    // Indicates whether the results model has data
-    console.log("Has data? ", myResults.hasData());
+  results.on("data", function() {
 
-    // The results rows
-    console.log("Data (rows): ", myResults.data().rows);
+    if(results.hasData()){
+      var d = _.pluck(results.collection().models, 'attributes');
+      console.log(d);
 
-    // The Backbone collection
-    console.log("Backbone collection: ", myResults.collection());
+    }
+
   });
-
-
 });
