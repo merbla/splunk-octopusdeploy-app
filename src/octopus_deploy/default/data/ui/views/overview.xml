@@ -20,7 +20,7 @@
       <html>
         <h2>Active Projects</h2>
         <div id="activeProjectsByDeployments">
-          <svg></svg>
+          <svg id="chart1"></svg>
         </div>
 
       </html>
