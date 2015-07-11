@@ -1,4 +1,4 @@
-<dashboard script="autodiscover.js,  activeProjectsByDeployments.js"
+<dashboard script="autodiscover.js, last3monthsdeployments.js, activeProjectsByDeployments.js"
   stylesheet="octopusdeploy.css, nv.d3.min.css">
   <label>Overview</label>
   <row >
@@ -12,9 +12,10 @@
     <panel>
       <html>
         <h2>Last 3 Months deployments</h2>
-        <div id="last3monthsdeployments"/>
+        <div id="last3monthsdeployments">
+            <svg id="last3monthsdeploymentsChart"></svg>
+        </div>
       </html>
-
     </panel>
     <panel>
       <html>

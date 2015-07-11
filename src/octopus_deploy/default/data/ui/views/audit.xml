@@ -7,8 +7,18 @@
       </div>
     </html>
   </row>
-  <row grouping="2">
-     <!-- table -->
+  <row>
+    <table>
+      <title>Events </title>
+      <searchString>index=_internal | top limit=100 sourcetype | eval percent = round(percent,2)</searchString>
+      <earliestTime>-24h@h</earliestTime>
+      <latestTime>now</latestTime>
+      <option name="wrap">true</option>
+      <option name="rowNumbers">true</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">cell</option>
+      <option name="count">10</option>
+    </table>
   </row>
 
 </dashboard>
