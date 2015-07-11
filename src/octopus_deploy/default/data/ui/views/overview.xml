@@ -1,5 +1,5 @@
 <dashboard script="autodiscover.js,  activeProjectsByDeployments.js"
-  stylesheet="octopusdeploy.css, ../app/octopus_deploy/bower_components/nvd3/build/nv.d3.min.css">
+  stylesheet="octopusdeploy.css, nv.d3.min.css">
   <label>Overview</label>
   <row >
     <html>
