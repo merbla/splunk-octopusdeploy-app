@@ -1,4 +1,4 @@
-<dashboard script="deploymentsByHour.js, avgDeploymentTime.js, longDeployments.js, deploymentPunchCard.js, deploymentOutcomeByProject.js"
+<dashboard script="deploymentsByHour.js, longDeployments.js, deploymentPunchCard.js, deploymentOutcomeByProject.js"
   stylesheet="octopusdeploy.css">
   <label>Deployments</label>
 
@@ -20,15 +20,15 @@
         </div>
       </html>
     </panel>
-
     <panel>
       <html>
-        <h2>Avg Deployment Time</h2>
-        <div id="avgDeploymentTime">
-            <svg id="avgDeploymentTimeChart"></svg>
+        <h2>Deployment by Duration</h2>
+        <div id="longDeployments">
+            <svg id="longDeploymentsChart"></svg>
         </div>
       </html>
     </panel>
+
 
   </row>
   <row>
