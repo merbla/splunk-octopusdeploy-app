@@ -8,6 +8,7 @@
       </div>
     </html>
   </row>
+  
   <row>
     <panel>
       <html>
@@ -23,7 +24,6 @@
         <div id="activeProjectsByDeployments">
           <svg id="activeProjectsByDeploymentsChart"></svg>
         </div>
-
       </html>
     </panel>
   </row>
@@ -43,18 +43,7 @@
         <div id="activeUsers">
           <svg id="activeUsersChart"></svg>
         </div>
-
       </html>
     </panel>
   </row>
-
-
-  <row >
-    <html>
-      <div>
-        Add some info/description
-      </div>
-    </html>
-  </row>
-
 </dashboard>

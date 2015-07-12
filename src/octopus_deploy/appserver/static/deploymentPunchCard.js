@@ -37,8 +37,8 @@ require([
   require("nvd3");
 
   var mainSearch = new searchManager({
-    id: "activeUsersSearch",
-    search: "sourcetype=octopus:event | timechart span=1day count by Username",
+    id: "punchCardSearch",
+      search: "sourcetype=octopus:task Name=Health | timechart count(IsCompleted) by State",
   });
 
   var results = mainSearch.data("preview", {});
@@ -92,7 +92,6 @@ require([
       var chart;
 
       nv.addGraph(function() {
-
         chart = nv.models.lineChart()
           .options({
             transitionDuration: 300,
@@ -106,23 +105,22 @@ require([
             return d[1];
           });
 
-        chart.xAxis.rotateLabels(-45);
 
         chart.xAxis
           .showMaxMin(false);
 
         chart.yAxis
-          .axisLabel("Events");
+          .axisLabel("Health Checks");
 
         chart.yAxis.tickFormat(function(d) {
           return d3.format('d')(d);
         });
 
         chart.xAxis.tickFormat(function(d) {
-          return d3.time.format('%B-%d')(new Date(d))
+        return d3.time.format('%B-%d')(new Date(d))
         });
 
-        d3.select('#activeUsersChart')
+        d3.select('#tentacleHealthChart')
           .datum(series)
           .call(chart);
 

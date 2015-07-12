@@ -36,9 +36,19 @@ require([
   //Load v3
   require("nvd3");
 
+  //
+  // sourcetype="octopus:deployment"
+  // | join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ]
+  // | join ReleaseId [ search sourcetype="octopus:release" | rename Id as ReleaseId, Version as ReleaseVersion]
+  // | join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName]
+  // | join TaskId [ search sourcetype="octopus:task"
+  // | rename Id as TaskId]
+  // | chart count(TaskId) by ProjectName, State
+
+
   var mainSearch = new searchManager({
-    id: "activeUsersSearch",
-    search: "sourcetype=octopus:event | timechart span=1day count by Username",
+    id: "deploymentOutcomeByProject",
+    search: "sourcetype=octopus:deployment | join EnvironmentId [ search sourcetype=octopus:environment | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ] | join ReleaseId [ search sourcetype=octopus:release | rename Id as ReleaseId, Version as ReleaseVersion] | join ProjectId [ search sourcetype=octopus:project | rename Id as ProjectId, Name as ProjectName]  | join TaskId [ search sourcetype=octopus:task | rename Id as TaskId] | chart count(TaskId) by ProjectName, State",
   });
 
   var results = mainSearch.data("preview", {});
@@ -49,7 +59,7 @@ require([
       var series = [];
 
       var seriesFields = _.filter(results.data().fields, function(i) {
-        return !i.indexOf("_") == 0;
+        return !i.indexOf("_") == 0 && i != "ProjectName";
       });
 
       var data = _.pluck(results.collection().models, 'attributes');
@@ -64,11 +74,11 @@ require([
       _.each(series, function(s) {
         _.each(data, function(item) {
 
-          var t = item["_time"];
+          var l = item["ProjectName"];
           var val = item[s.key];
 
           var i = [];
-          i.push(new Date(t));
+          i.push(l);
           i.push(parseInt(val));
 
           s.values.push(i);
@@ -83,21 +93,21 @@ require([
 
       var chart;
 
-      var colors = d3.scale.category20();
-
-      var keyColor = function(d, i) {
-        return colors(d.key)
-      };
-
-      var chart;
-
       nv.addGraph(function() {
-
-        chart = nv.models.lineChart()
+        chart = nv.models.multiBarHorizontalChart()
+          .barColor(d3.scale.category20().range())
+          .duration(250)
+          .margin({
+            left: 200
+          })
+          .stacked(true)
           .options({
             transitionDuration: 300,
             useInteractiveGuideline: true
           });
+
+        //chart.useInteractiveGuideline(true);
+
         chart
           .x(function(d) {
             return d[0];
@@ -106,25 +116,24 @@ require([
             return d[1];
           });
 
-        chart.xAxis.rotateLabels(-45);
-
-        chart.xAxis
-          .showMaxMin(false);
-
-        chart.yAxis
-          .axisLabel("Events");
 
         chart.yAxis.tickFormat(function(d) {
           return d3.format('d')(d);
         });
 
-        chart.xAxis.tickFormat(function(d) {
-          return d3.time.format('%B-%d')(new Date(d))
-        });
-
-        d3.select('#activeUsersChart')
+        d3.select('#deploymentOutcomeByProjectChart')
           .datum(series)
-          .call(chart);
+          .transition()
+          .duration(1000)
+          .call(chart)
+          .each('start', function() {
+            setTimeout(function() {
+              d3.selectAll('#deploymentOutcomeByProjectChart *').each(function() {
+                if (this.__transition__)
+                  this.__transition__.duration = 1;
+              })
+            }, 0)
+          });
 
         nv.utils.windowResize(chart.update);
 

@@ -38,7 +38,7 @@ require([
 
   var mainSearch = new searchManager({
     id: "tentacleHealthSearch",
-      search: "sourcetype=octopus:task Name=Health | timechart count(IsCompleted) by State",
+    search: "sourcetype=octopus:task Name=Health | timechart count(IsCompleted) by State",
   });
 
   var results = mainSearch.data("preview", {});
@@ -105,6 +105,7 @@ require([
             return d[1];
           });
 
+        chart.xAxis.rotateLabels(-45);
 
         chart.xAxis
           .showMaxMin(false);
@@ -117,7 +118,7 @@ require([
         });
 
         chart.xAxis.tickFormat(function(d) {
-        return d3.time.format('%B-%d')(new Date(d))
+          return d3.time.format('%B-%d')(new Date(d))
         });
 
         d3.select('#tentacleHealthChart')
