@@ -36,9 +36,17 @@ require([
   //Load v3
   require("nvd3");
 
+
+  // sourcetype="octopus:deployment"
+  // | rename Id as DeploymentId
+  // | join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName ]
+  // | join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName ]
+  // | timechart count(DeploymentId)  span=1month by EnvironmentName
+
+
   var mainSearch = new searchManager({
     id: "last3MonthDeployment",
-      search: "sourcetype=octopus:deployment | rename Id as DeploymentId | join EnvironmentId [ search sourcetype=octopus:environment | rename Id as EnvironmentId, Name as EnvironmentName ] | join ProjectId [ search sourcetype=octopus:project | rename Id as ProjectId, Name as ProjectName ]  | timechart count(DeploymentId)  span=1day by ProjectName",
+    search: "sourcetype=octopus:deployment | rename Id as DeploymentId | join EnvironmentId [ search sourcetype=octopus:environment | rename Id as EnvironmentId, Name as EnvironmentName ] | join ProjectId [ search sourcetype=octopus:project | rename Id as ProjectId, Name as ProjectName ] | timechart count(DeploymentId)  span=1month by EnvironmentName",
   });
 
   var results = mainSearch.data("preview", {});
@@ -84,43 +92,139 @@ require([
       var chart;
 
       nv.addGraph(function() {
-        chart = nv.models.stackedAreaChart()
-          .useInteractiveGuideline(true)
+        chart = nv.models.multiBarChart()
+          .color(keyColor)
+          .duration(300)
+          .rotateLabels(-45)
+          .groupSpacing(0.1)
           .x(function(d) {
             return d[0];
           })
           .y(function(d) {
             return d[1];
           })
-          .color(keyColor)
-          .duration(300);
+          .reduceXTicks(false)
+          .staggerLabels(true);
+
+        chart.xAxis
+          .showMaxMin(false);
+
+        chart.yAxis
+          .axisLabel("Deployments")
+          .axisLabelDistance(-5);
 
         chart.yAxis.tickFormat(function(d) {
           return d3.format('d')(d);
         });
 
         chart.xAxis.tickFormat(function(d) {
-          return d3.time.format('%w')(new Date(d))
+          return d3.time.format('%B')(new Date(d))
         });
 
-        chart.legend.vers('furious');
 
-        d3.select('#last3monthsdeploymentsChart')
+        d3.select('#last3monthsDeploymentsChart')
           .datum(series)
-          .transition()
-          .duration(1000)
-          .call(chart)
-          .each('start', function() {
-            setTimeout(function() {
-              d3.selectAll('#last3monthsdeploymentsChart *').each(function() {
-                if (this.__transition__)
-                  this.__transition__.duration = 1;
-              })
-            }, 0)
-          });
+          .call(chart);
+
         nv.utils.windowResize(chart.update);
+
+
+
         return chart;
       });
+
+
+      //
+      // nv.addGraph({
+      //   generate: function() {
+      //     var width = nv.utils.windowSize().width,
+      //       height = nv.utils.windowSize().height;
+      //
+      //     var chart = nv.models.multiBarChart()
+      //       // .width(width)
+      //       // .height(height)
+      //       .x(function(d) {
+      //         return d[0];
+      //       })
+      //       .y(function(d) {
+      //         return d[1];
+      //       })
+      //       .stacked(true);
+      //
+      //     chart.yAxis.tickFormat(function(d) {
+      //       return d3.format('d')(d);
+      //     });
+      //
+      //     chart.xAxis.tickFormat(function(d) {
+      //       return d3.time.format('%B-%d')(new Date(d))
+      //     });
+      //
+      //     var svg = d3.select('#last3monthsDeploymentsChart')
+      //       .datum(series);
+      //
+      //     svg.transition().duration(0).call(chart);
+      //
+      //     return chart;
+      //   },
+      //   callback: function(graph) {
+      //     nv.utils.windowResize(function() {
+      //       var width = nv.utils.windowSize().width;
+      //       var height = nv.utils.windowSize().height;
+      //       graph.width(width).height(height);
+      //
+      //       d3.select('#last3monthsDeploymentsChart')
+      //         .attr('width', width)
+      //         .attr('height', height)
+      //         .transition().duration(0)
+      //         .call(graph);
+      //
+      //     });
+      //   }
+      // });
+
+      //
+      //
+      //
+      // nv.addGraph(function() {
+      //   chart = nv.models.stackedAreaChart()
+      //     .useInteractiveGuideline(true)
+      //     .x(function(d) {
+      //       return d[0];
+      //     })
+      //     .y(function(d) {
+      //       return d[1];
+      //     })
+      //     .color(keyColor)
+      //     .duration(300);
+      //
+      //   chart.yAxis.tickFormat(function(d) {
+      //     return d3.format('d')(d);
+      //   });
+      //
+      //   chart.xAxis.tickFormat(function(d) {
+      //     return d3.time.format('%B-%d')(new Date(d))
+      //   });
+      //
+      //   chart.xAxis.rotateLabels(-45);
+      //
+      //   chart.legend.vers('furious');
+      //
+      //   d3.select('#last3monthsdeploymentsChart')
+      //     .datum(series)
+      //     .transition()
+      //     .duration(1000)
+      //     .call(chart)
+      //     .each('start', function() {
+      //       setTimeout(function() {
+      //         d3.selectAll('#last3monthsdeploymentsChart *').each(function() {
+      //           if (this.__transition__)
+      //             this.__transition__.duration = 1;
+      //         })
+      //       }, 0)
+      //     });
+      //   nv.utils.windowResize(chart.update);
+      //   return chart;
+      // });
 
     }
   });

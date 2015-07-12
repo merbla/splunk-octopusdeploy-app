@@ -100,8 +100,15 @@ require([
         });
 
         chart.xAxis.tickFormat(function(d) {
-          return d3.time.format('%w')(new Date(d))
+          return d3.time.format('%B-%d')(new Date(d))
         });
+
+        chart.xAxis
+          .rotateLabels(-45)
+          .showMaxMin(false)
+
+        chart.yAxis
+          .axisLabel("Deployments")
 
         chart.legend.vers('furious');
 

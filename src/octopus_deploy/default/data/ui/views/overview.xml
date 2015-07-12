@@ -13,7 +13,7 @@
       <html>
         <h2>Last 3 Months deployments</h2>
         <div id="last3monthsdeployments">
-            <svg id="last3monthsdeploymentsChart"></svg>
+            <svg id="last3monthsDeploymentsChart"></svg>
         </div>
       </html>
     </panel>
@@ -27,6 +27,28 @@
       </html>
     </panel>
   </row>
+
+  <row>
+    <panel>
+      <html>
+        <h2>Tentacle Health Checks</h2>
+        <div id="tentacleHealthChecks">
+            <svg id="tentacleHealthChecksChart"></svg>
+        </div>
+      </html>
+    </panel>
+    <panel>
+      <html>
+        <h2>Active Users</h2>
+        <div id="activeUsers">
+          <svg id="activeUsersChart"></svg>
+        </div>
+
+      </html>
+    </panel>
+  </row>
+
+
   <row >
     <html>
       <div>

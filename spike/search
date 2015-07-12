@@ -1,3 +1,10 @@
+#Audit
+
+sourcetype=octopus:event | rename Id as EventId | join UserId [ search sourcetype=octopus:user | rename Id as UserId ]
+
+
+
+
 #Deployment by environment
 sourcetype="octopus:deployment"
 | rename Id as DeploymentId
@@ -31,6 +38,8 @@ sourcetype="octopus:event" |  timechart span=1week count by Username
 
 #Active Users by Environment
 sourcetype="octopus:event" |  timechart span=1week count by Username
+
+sourcetype="octopus:event" | stats count(Id) by Category
 
 
 #Longest Deployments (Top 5) By Release
