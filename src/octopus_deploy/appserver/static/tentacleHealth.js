@@ -36,17 +36,9 @@ require([
   //Load v3
   require("nvd3");
 
-
-  // sourcetype="octopus:deployment"
-  // | rename Id as DeploymentId
-  // | join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName ]
-  // | join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName ]
-  // | timechart count(DeploymentId)  span=1month by EnvironmentName
-
-
   var mainSearch = new searchManager({
-    id: "last3MonthDeployment",
-    search: "sourcetype=octopus:deployment | rename Id as DeploymentId | join EnvironmentId [ search sourcetype=octopus:environment | rename Id as EnvironmentId, Name as EnvironmentName ] | join ProjectId [ search sourcetype=octopus:project | rename Id as ProjectId, Name as ProjectName ] | timechart count(DeploymentId)  span=1month by EnvironmentName",
+    id: "tentacleHealthSearch",
+      search: "sourcetype=octopus:task Name=Health | timechart count(IsCompleted) by State",
   });
 
   var results = mainSearch.data("preview", {});
@@ -91,39 +83,44 @@ require([
 
       var chart;
 
-      nv.addGraph(function() {
-        chart = nv.models.multiBarChart()
-        //  .useInteractiveGuideline(true)
-          .color(keyColor)
-          .duration(300)
-          .rotateLabels(-45)
-          .groupSpacing(0.1)
+      var colors = d3.scale.category20();
 
-        .x(function(d) {
+      var keyColor = function(d, i) {
+        return colors(d.key)
+      };
+
+      var chart;
+
+      nv.addGraph(function() {
+        chart = nv.models.lineChart()
+          .options({
+            transitionDuration: 300,
+            useInteractiveGuideline: true
+          });
+        chart
+          .x(function(d) {
             return d[0];
           })
           .y(function(d) {
             return d[1];
-          })
-          .reduceXTicks(false)
-          .staggerLabels(true);
+          });
+
 
         chart.xAxis
           .showMaxMin(false);
 
         chart.yAxis
-          .axisLabel("Deployments")
-          .axisLabelDistance(-5);
+          .axisLabel("Health Checks");
 
         chart.yAxis.tickFormat(function(d) {
           return d3.format('d')(d);
         });
 
         chart.xAxis.tickFormat(function(d) {
-          return d3.time.format('%B')(new Date(d))
+        return d3.time.format('%B-%d')(new Date(d))
         });
 
-        d3.select('#last3monthsDeploymentsChart')
+        d3.select('#tentacleHealthChart')
           .datum(series)
           .call(chart);
 

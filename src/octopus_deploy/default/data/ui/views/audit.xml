@@ -1,13 +1,6 @@
 <form script="autodiscover.js, last3monthsdeployments.js" stylesheet="octopusdeploy.css">
   <label>Audit</label>
-  <row>
-    <html>
-      <div>
-        Audit Info
-      </div>
-    </html>
-  </row>
-  <row>
+
     <fieldset autoRun="true" submitButton="false">
         <input id="timerange" type="time" searchWhenChanged="true">
             <default>
@@ -16,6 +9,13 @@
             </default>
         </input>
     </fieldset>
+
+  <row>
+    <html>
+      <div>
+        Audit Info
+      </div>
+    </html>
   </row>
   <row>
 
