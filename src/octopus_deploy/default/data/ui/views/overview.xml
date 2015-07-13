@@ -8,8 +8,6 @@
       </div>
     </html>
   </row>
-
-
   <row>
     <panel>
       <html>
@@ -57,7 +55,7 @@
 
   <row>
     <single id="avgDepSearchSingle">
-      <search id="avgDepSearch" ref="AvgDuration">
+      <search id="avgDepSearch" ref="OctopusDeploy - AvgDuration">
       </search>
     </single>
   </row>
