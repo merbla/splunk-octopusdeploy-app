@@ -105,7 +105,6 @@ require([
             return d[1];
           });
 
-
         chart.xAxis
           .showMaxMin(false);
 
@@ -128,8 +127,6 @@ require([
 
         return chart;
       });
-
-
     }
   });
 

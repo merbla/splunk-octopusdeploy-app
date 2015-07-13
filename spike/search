@@ -1,3 +1,14 @@
+
+[DurationGrouped]
+sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId] | eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N") | eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N") | eval diff = tostring((ot - it), "duration") | rex field=diff "(?<HH>\d+):(?<MM>\d+):(?<SS>\d+)" | eval dur = (HH * 3600) + (MM * 60) + SS  | stats count(dur) by dur | sort -dur
+
+
+
+#DeploymentOutcome by Project
+sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
+
+
+
 #Avg Deployment
 sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
 | eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N")
@@ -9,54 +20,7 @@ sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task"
 
 
 sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
-
 sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId] | stats count(TaskId) by Duration | sort -Duration
-
-
-
-
-
-
-
-sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
-| eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N")
-| eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N")
-| eval diff = tostring((ot - it), "duration")
-| rex field=diff "(?<HH>\d+):(?<MM>\d+):(?<SS>\d+)"
-| eval dur = (HH * 3600) + (MM * 60) + SS
-| table diff dur
-
-sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
-| eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N")
-| eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N")
-| eval diff = tostring((ot - it), "duration")
-| table diff
-timeformat="%Y-%m-%dT%H:%M:%S.%3N"
-
-
-sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
-| eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N")
-| eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N")
-| eval diff = tostring((ot - it), "duration")
-| table diff | stats avg(convert num(diff)) by EnvironmentId
-
-
-sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
-| eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N")
-| eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N")
-| eval diff = tostring((ot - it), "duration")
- stats avg(diff) as avgDuration values(EnvironmentId) as Assigned
-| transaction TaskId
-
-source="servername" Assignee="*" GroupName="TierII" OR GroupName="TierIII"
-| stats min(DateTimeAssign) AS begin max(DateTimeAcknow) AS end by CallID,GroupName,Assignee,Priority
-| eval duration=round(end-begin)
-| eval Created=strftime(begin," %b %d, %Y %T %p")
-| eval Closed=strftime(end," %b %d, %Y %T %p")
-| stats avg(duration) as avgDuration values(CallID) values(Created) as Assigned values(Closed) as Ack by GroupName
-| fieldformat avgDuration = tostring(avgDuration,"duration")
-
-
 
 
 #Audit
@@ -289,3 +253,46 @@ source="octopus_deploy://Local Octopus Deploy" Name=Health
 
 
 sourcetype="octopus:task" Name=Health | timechart span=1d count by State
+
+
+
+
+
+
+sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
+| eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N")
+| eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N")
+| eval diff = tostring((ot - it), "duration")
+| rex field=diff "(?<HH>\d+):(?<MM>\d+):(?<SS>\d+)"
+| eval dur = (HH * 3600) + (MM * 60) + SS
+| table diff dur
+
+sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
+| eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N")
+| eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N")
+| eval diff = tostring((ot - it), "duration")
+| table diff
+timeformat="%Y-%m-%dT%H:%M:%S.%3N"
+
+
+sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
+| eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N")
+| eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N")
+| eval diff = tostring((ot - it), "duration")
+| table diff | stats avg(convert num(diff)) by EnvironmentId
+
+
+sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId]
+| eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N")
+| eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N")
+| eval diff = tostring((ot - it), "duration")
+ stats avg(diff) as avgDuration values(EnvironmentId) as Assigned
+| transaction TaskId
+
+source="servername" Assignee="*" GroupName="TierII" OR GroupName="TierIII"
+| stats min(DateTimeAssign) AS begin max(DateTimeAcknow) AS end by CallID,GroupName,Assignee,Priority
+| eval duration=round(end-begin)
+| eval Created=strftime(begin," %b %d, %Y %T %p")
+| eval Closed=strftime(end," %b %d, %Y %T %p")
+| stats avg(duration) as avgDuration values(CallID) values(Created) as Assigned values(Closed) as Ack by GroupName
+| fieldformat avgDuration = tostring(avgDuration,"duration")

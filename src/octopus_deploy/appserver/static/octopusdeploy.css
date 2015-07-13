@@ -20,3 +20,6 @@
   height: 0px;
   width: 0px;
 }
+.splunk-single{
+    visibility: hidden;
+}

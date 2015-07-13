@@ -4,13 +4,12 @@
 
   <row>
     <html>
-      <h2>Deployment PunchCard</h2>
+      <h2>Punch Card</h2>
       <div id="deploymentPunchCard">
           <svg id="deploymentPunchCardChart"></svg>
       </div>
     </html>
   </row>
-
   <row>
     <panel>
       <html>
@@ -28,11 +27,8 @@
         </div>
       </html>
     </panel>
-
-
   </row>
   <row>
-
         <panel>
           <html>
             <h2>Deployment Outcome by Project</h2>
@@ -43,5 +39,10 @@
           </html>
         </panel>
   </row>
-
+  <row>
+    <table id="durationTable">
+      <search id="durationSearch" ref="OctopusDeploy - DurationGrouped">
+      </search>
+    </table>
+  </row>
 </dashboard>
