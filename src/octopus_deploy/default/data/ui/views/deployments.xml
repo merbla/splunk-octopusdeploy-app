@@ -29,9 +29,9 @@
     </panel>
     <panel>
       <html>
-        <h2>Deployment by Duration</h2>
-        <div id="longDeployments">
-            <svg id="longDeploymentsChart"></svg>
+        <h2>By Duration</h2>
+        <div id="byDuration">
+            <svg id="byDurationChart"></svg>
         </div>
       </html>
     </panel>

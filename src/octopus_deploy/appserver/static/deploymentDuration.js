@@ -45,67 +45,44 @@ require([
 
       var series = [];
 
-      var seriesFields = _.filter(results.data().fields, function(i) {
-        return !i.indexOf("_") == 0;
-      });
-
       var data = _.pluck(results.collection().models, 'attributes');
 
-      _.each(seriesFields, function(f) {
-        var item = {};
-        item.key = f;
-        item.values = [];
-        series.push(item);
-      })
-
-      _.each(series, function(s) {
-        _.each(data, function(item) {
-
-          var t = item["_time"];
-          var val = item[s.key];
-
-          var i = [];
-          i.push(new Date(t));
-          i.push(parseInt(val));
-
-          s.values.push(i);
-        });
-      });
-
-      var chart;
+      var item = {};
+      item.key = "Duration";
+      item.values = data;
+      series.push(item);
 
       var chart;
       nv.addGraph(function() {
         chart = nv.models.historicalBarChart();
-        
+
         chart
-          .margin({
-            left: 100,
-            bottom: 100
-          })
           .useInteractiveGuideline(true)
-          .duration(250);
+          .duration(250)
+          .x(function(d) {
+            return d.durationInSecs;
+          })
+          .y(function(d) {
+            return d.count;
+          });
 
         chart.xAxis
-          .axisLabel("Time (s)")
-          .tickFormat(d3.format(',.1f'));
+          .axisLabel("Time (s)");
+        //  .tickFormat(d3.format(',.1f'));
 
         chart.yAxis
-          .axisLabel('Voltage (v)')
-          .tickFormat(d3.format(',.2f'));
+          .axisLabel('Deployments');
+          //.tickFormat(d3.format(',.2f'));
 
         chart.showXAxis(true);
 
-        d3.select('#test1')
-          .datum(sinData())
+        d3.select('#byDuration')
+          .datum(series)
           .transition()
           .call(chart);
 
         nv.utils.windowResize(chart.update);
 
-        chart.dispatch.on('stateChange', function(e) {
-          nv.log('New State:', JSON.stringify(e));
-        });
         return chart;
       });
 
