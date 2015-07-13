@@ -54,16 +54,23 @@ require([
 
       var chart;
       nv.addGraph(function() {
-        chart = nv.models.historicalBarChart();
+        chart = nv.models.multiBarChart();
 
         chart
-          .useInteractiveGuideline(true)
-          .duration(250)
+        .duration(300)
+        .rotateLabels(-45)
+        .groupSpacing(0.1)
           .x(function(d) {
             return d.durationInSecs;
           })
           .y(function(d) {
-            return d.count;
+
+            return parseInt(d.count);
+          });
+
+
+          chart.yAxis.tickFormat(function(d) {
+            return d3.format('d')(d);
           });
 
         chart.xAxis
@@ -76,7 +83,7 @@ require([
 
         chart.showXAxis(true);
 
-        d3.select('#byDuration')
+        d3.select('#byDurationChart')
           .datum(series)
           .transition()
           .call(chart);

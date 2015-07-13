@@ -4,7 +4,7 @@
 #avgDeploymentTime, #longDeployments, #deploymentsByHour, #deploymentPunchCard {
   height: 300px;
 }
-#deploymentOutcomeByProject {
+#deploymentOutcomeByProject, #byDuration {
   height: 300px;
 }
 
