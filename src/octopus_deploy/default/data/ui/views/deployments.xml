@@ -2,7 +2,7 @@
   stylesheet="octopusdeploy.css, nv.d3.min.css, cal-heatmap.css">
   <label>Deployments</label>
   <search id="durationGroupedSearch" ref="OctopusDeploy - DurationGrouped"></search>
-  <search id="deploymentByDay" ref="OctopusDeploy - DeploymentsByDay"></search>
+  <!-- <search id="deploymentByDay" ref="OctopusDeploy - CountByDay"></search> -->
   <row >
     <html>
       <div>

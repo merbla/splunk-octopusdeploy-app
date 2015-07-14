@@ -1,4 +1,7 @@
 
+sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId] | da
+
+
 [DurationGrouped]
 sourcetype="octopus:deployment" | join TaskId [ search sourcetype="octopus:task" | rename Id as TaskId] | eval it = strptime(StartTime, "%Y-%m-%dT%H:%M:%S.%3N") | eval ot = strptime(CompletedTime, "%Y-%m-%dT%H:%M:%S.%3N") | eval diff = tostring((ot - it), "duration") | rex field=diff "(?<HH>\d+):(?<MM>\d+):(?<SS>\d+)" | eval dur = (HH * 3600) + (MM * 60) + SS  | stats count(dur) by dur | sort -dur
 
