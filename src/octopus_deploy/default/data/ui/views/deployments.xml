@@ -1,9 +1,8 @@
-<dashboard script="autodiscover.js, deploymentDuration.js, tentacleHealth.js, activeUsers.js, avgDeploymentTime.js, deploymentOutcomeByProject.js"
-  stylesheet="octopusdeploy.css, nv.d3.min.css">
+<dashboard script="autodiscover.js, deploymentDuration.js, deploymentOutcomeByProject.js, deploymentPunchCard.js"
+  stylesheet="octopusdeploy.css, nv.d3.min.css, cal-heatmap.css">
   <label>Deployments</label>
-  <search id="durationGroupedSearch" ref="OctopusDeploy - DurationGrouped">
-
-   </search>
+  <search id="durationGroupedSearch" ref="OctopusDeploy - DurationGrouped"></search>
+  <search id="deploymentByDay" ref="OctopusDeploy - DeploymentsByDay"></search>
   <row >
     <html>
       <div>
@@ -16,7 +15,7 @@
       <html>
         <h2>Punch Card</h2>
         <div id="punchCard">
-            <svg id="punchCardChart"></svg>
+          <div id="cal-heatmap"></div>
         </div>
       </html>
     </panel>
@@ -28,7 +27,6 @@
         <div id="deploymentOutcomeByProject">
           <svg id="deploymentOutcomeByProjectChart"></svg>
         </div>
-
       </html>
     </panel>
   </row>
@@ -37,8 +35,7 @@
     <panel>
       <table>
         <title>Longest Releases through Environments</title>
-        <search id="longestReleases" ref="OctopusDeploy - LongestReleases">
-        </search>
+        <search id="longestReleases" ref="OctopusDeploy - LongestReleases"></search>
         <option name="wrap">true</option>
         <option name="rowNumbers">false</option>
         <option name="dataOverlayMode">none</option>
@@ -53,16 +50,10 @@
       <html>
         <h2>By Duration</h2>
         <div id="byDuration">
-            <svg id="byDurationChart"></svg>
+          <svg id="byDurationChart"></svg>
         </div>
       </html>
     </panel>
   </row>
 
-  <row>
-    <single id="avgDepSearchSingle">
-      <search id="avgDepSearch" ref="OctopusDeploy - AvgDuration">
-      </search>
-    </single>
-  </row>
 </dashboard>
