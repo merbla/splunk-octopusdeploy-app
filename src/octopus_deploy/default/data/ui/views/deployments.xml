@@ -1,4 +1,4 @@
-<dashboard script="autodiscover.js, deploymentDuration.js, tentacleHealth.js, activeUsers.js, avgDeploymentTime.js"
+<dashboard script="autodiscover.js, deploymentDuration.js, tentacleHealth.js, activeUsers.js, avgDeploymentTime.js, deploymentOutcomeByProject.js"
   stylesheet="octopusdeploy.css, nv.d3.min.css">
   <label>Deployments</label>
   <search id="durationGroupedSearch" ref="OctopusDeploy - DurationGrouped">
@@ -24,17 +24,20 @@
   <row>
     <panel>
       <html>
-        <h2>Tentacle Health</h2>
-        <div id="byDuration">
-            <svg id="byDurationChart"></svg>
+        <h2>Deployment Outcome by Project</h2>
+        <div id="deploymentOutcomeByProject">
+          <svg id="deploymentOutcomeByProjectChart"></svg>
         </div>
+
       </html>
     </panel>
+  </row>
+  <row>
     <panel>
       <html>
-        <h2>Avgerage Deployment Time (seconds)</h2>
-        <div id="avgDeploymentTime">
-            <svg id="avgDeploymentTimeChart"></svg>
+        <h2>By Duration</h2>
+        <div id="byDuration">
+            <svg id="byDurationChart"></svg>
         </div>
       </html>
     </panel>
@@ -43,6 +46,17 @@
         <h2>Active Users</h2>
         <div id="activeUsers">
           <svg id="activeUsersChart"></svg>
+        </div>
+      </html>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <html>
+        <h2>By Duration</h2>
+        <div id="byDuration">
+            <svg id="byDurationChart"></svg>
         </div>
       </html>
     </panel>

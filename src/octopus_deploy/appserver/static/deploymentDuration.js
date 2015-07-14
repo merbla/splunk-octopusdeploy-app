@@ -49,17 +49,20 @@ require([
 
       var item = {};
       item.key = "Duration";
-      item.values = data;
+      item.values = _.sortBy(data, 'durationInSecs');
       series.push(item);
 
       var chart;
       nv.addGraph(function() {
         chart = nv.models.multiBarChart();
+        // chart = nv.models.historicalBarChart()
+          // .useInteractiveGuideline(true)
+
 
         chart
         .duration(300)
         .rotateLabels(-45)
-        .groupSpacing(0.1)
+        // .groupSpacing(0.1)
           .x(function(d) {
             return d.durationInSecs;
           })
