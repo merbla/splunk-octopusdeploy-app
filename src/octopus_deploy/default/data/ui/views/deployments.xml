@@ -33,21 +33,18 @@
     </panel>
   </row>
   <row>
+
     <panel>
-      <html>
-        <h2>By Duration</h2>
-        <div id="byDuration1">
-            <svg id="byDurationChart1"></svg>
-        </div>
-      </html>
-    </panel>
-    <panel>
-      <html>
-        <h2>Longest Deployments</h2>
-        <div id="longDeployments">
-            <svg id="longDeploymentsChart"></svg>
-        </div>
-      </html>
+      <table>
+        <title>Longest Releases through Environments</title>
+        <search id="longestReleases" ref="OctopusDeploy - LongestReleases">
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
     </panel>
   </row>
 
