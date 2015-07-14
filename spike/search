@@ -65,6 +65,16 @@ sourcetype="octopus:event" |  timechart span=1week count by Username
 
 sourcetype="octopus:event" | stats count(Id) by Category
 
+Updated Longest Deployments
+sourcetype="octopus:deployment"
+| join EnvironmentId [ search sourcetype="octopus:environment" | rename Id as EnvironmentId, Name as EnvironmentName, LastModifiedBy as EnvironmentLastModifiedBy ]
+| join ReleaseId [ search sourcetype="octopus:release" | rename Id as ReleaseId, Version as ReleaseVersion]
+| join ProjectId [ search sourcetype="octopus:project" | rename Id as ProjectId, Name as ProjectName]
+| sort -EnvironmentLastModifiedBy
+| transaction ReleaseId | stats count(EnvironmentId) as EnvironmentCount by ReleaseId, duration, ProjectName, ReleaseVersion | sort -EnvironmentCount, Duration | eval DurationInHours = duration/60/60
+| eval DurationInDays = DurationInHours/24
+
+
 
 #Longest Deployments (Top 5) By Release
 sourcetype="octopus:deployment"

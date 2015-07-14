@@ -47,42 +47,37 @@ require([
 
       var data = _.pluck(results.collection().models, 'attributes');
 
+      _.each(data, function(i) {
+        i.order = parseInt(i.durationInSecs);
+      });
+
       var item = {};
       item.key = "Duration";
-      item.values = _.sortBy(data, 'durationInSecs');
+      item.values = _.sortBy(data, 'order');
       series.push(item);
 
       var chart;
       nv.addGraph(function() {
         chart = nv.models.multiBarChart();
-        // chart = nv.models.historicalBarChart()
-          // .useInteractiveGuideline(true)
-
 
         chart
-        .duration(300)
-        .rotateLabels(-45)
-        // .groupSpacing(0.1)
+          .duration(300)
+          .rotateLabels(-45)
           .x(function(d) {
             return d.durationInSecs;
           })
           .y(function(d) {
-
             return parseInt(d.count);
           });
-
-
-          chart.yAxis.tickFormat(function(d) {
-            return d3.format('d')(d);
-          });
+        chart.yAxis.tickFormat(function(d) {
+          return d3.format('d')(d);
+        });
 
         chart.xAxis
-          .axisLabel("Time (s)");
-        //  .tickFormat(d3.format(',.1f'));
+          .axisLabel("Deployment Time (s)");
 
         chart.yAxis
           .axisLabel('Deployments');
-          //.tickFormat(d3.format(',.2f'));
 
         chart.showXAxis(true);
 
@@ -95,9 +90,6 @@ require([
 
         return chart;
       });
-
-
     }
   });
-
 });

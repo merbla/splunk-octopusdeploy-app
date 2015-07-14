@@ -36,16 +36,16 @@
     <panel>
       <html>
         <h2>By Duration</h2>
-        <div id="byDuration">
-            <svg id="byDurationChart"></svg>
+        <div id="byDuration1">
+            <svg id="byDurationChart1"></svg>
         </div>
       </html>
     </panel>
     <panel>
       <html>
-        <h2>Active Users</h2>
-        <div id="activeUsers">
-          <svg id="activeUsersChart"></svg>
+        <h2>Longest Deployments</h2>
+        <div id="longDeployments">
+            <svg id="longDeploymentsChart"></svg>
         </div>
       </html>
     </panel>
