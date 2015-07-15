@@ -1,6 +1,6 @@
 {
     "name": "octopus_deploy",
-    "version": "0.0.13",
+    "version": "1.0.0",
     "description": "Splunk modular app for generating events from Octopus Deploy",
     "dependencies": {
         "splunk-sdk": ">=1.4.0",
