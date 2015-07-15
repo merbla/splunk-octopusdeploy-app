@@ -13,7 +13,6 @@ require.config({
   }
 });
 
-
 require([
   'underscore',
   'util/moment',
@@ -39,26 +38,44 @@ var mainSearch = new searchManager({
 
         var data = _.pluck(results.collection().models, 'attributes');
 
-        //
-        // _time,
-        // count
         _.each(data, function(i) {
-          i.order = parseInt(i.durationInSecs);
+          var item = {};
+          item.date = new Date(moment(i._time).toDate()).getTime()/1000;
+          item.value = parseInt(i.count);
+
+          series.push(item);
+
         });
+
+        var parser = function(data) {
+        	var stats = {};
+        	for (var d in data) {
+            var x = data[d].value;
+            if(x!="undefined" && x != undefined){
+              stats[data[d].date] = data[d].value;
+            }
+
+        	}
+        	return stats;
+        };
+
+        var parsed = parser(series);
+
+        var now = new Date();
+
+        var startDate = moment().subtract(1, 'years').toDate();
 
         var calendar = new CalHeatMap();
         calendar.init({
-          //  data: "datas-years.json",
+          start: startDate,
+          data: parsed,
           domain: "month",
           subDomain: "x_day",
-          range: 3,
-          cellsize: 15,
-          cellpadding: 3,
-          cellradius: 5,
+          range: 12,
+          cellsize: 40,
           domainGutter: 15,
           weekStartOnMonday: 0,
-          scale: [40, 60, 80, 100]
-
+          scale: [1, 10, 30, 50],
         });
       }
     }

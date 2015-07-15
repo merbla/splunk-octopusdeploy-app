@@ -1,29 +1,12 @@
-<dashboard script="autodiscover.js, deploymentDuration.js, deploymentOutcomeByProject.js, deploymentPunchCard.js"
-  stylesheet="octopusdeploy.css, nv.d3.min.css, cal-heatmap.css">
+<dashboard script="autodiscover.js, deploymentDuration.js, deploymentOutcomeByProject.js"
+  stylesheet="octopusdeploy.css, nv.d3.min.css">
   <label>Deployments</label>
   <search id="durationGroupedSearch" ref="OctopusDeploy - DurationGrouped"></search>
-  <!-- <search id="deploymentByDay" ref="OctopusDeploy - CountByDay"></search> -->
-  <row >
-    <html>
-      <div>
-        Add some info/description
-      </div>
-    </html>
-  </row>
+
   <row>
     <panel>
       <html>
-        <h2>Punch Card</h2>
-        <div id="punchCard">
-          <div id="cal-heatmap"></div>
-        </div>
-      </html>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <html>
-        <h2>Deployment Outcome by Project</h2>
+        <h2>Outcome by Project</h2>
         <div id="deploymentOutcomeByProject">
           <svg id="deploymentOutcomeByProjectChart"></svg>
         </div>
