@@ -1,13 +1,6 @@
 <dashboard script="autodiscover.js, last3monthsdeployments.js, activeProjectsByDeployments.js, tentacleHealth.js, activeUsers.js, avgDeploymentTime.js"
   stylesheet="octopusdeploy.css, nv.d3.min.css">
   <label>Overview</label>
-  <row >
-    <html>
-      <div>
-        Add some info/description
-      </div>
-    </html>
-  </row>
   <row>
     <panel>
       <html>
@@ -52,11 +45,17 @@
       </html>
     </panel>
   </row>
-
+  <row >
+    <html>
+      <div>
+        Add some info/description
+      </div>
+    </html>
+  </row>
   <row>
     <single id="avgDepSearchSingle">
       <search id="avgDepSearch" ref="OctopusDeploy - AvgDuration">
       </search>
     </single>
-  </row>
+  </row> 
 </dashboard>

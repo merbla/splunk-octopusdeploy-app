@@ -38,7 +38,7 @@ require([
 
   var mainSearch = new searchManager({
     id: "activeProjectsByDeploymentsSearch",
-      search: "sourcetype=octopus:deployment | rename Id as DeploymentId | join EnvironmentId [ search sourcetype=octopus:environment | rename Id as EnvironmentId, Name as EnvironmentName ] | join ProjectId [ search sourcetype=octopus:project | rename Id as ProjectId, Name as ProjectName ]  | timechart count(DeploymentId)  span=1day by ProjectName",
+      search: "sourcetype=octopus:deployment earliest=-3mon@mon | rename Id as DeploymentId | join EnvironmentId [ search sourcetype=octopus:environment | rename Id as EnvironmentId, Name as EnvironmentName ] | join ProjectId [ search sourcetype=octopus:project | rename Id as ProjectId, Name as ProjectName ]  | timechart count(DeploymentId)  span=1day by ProjectName",
   });
 
   var results = mainSearch.data("preview", {});

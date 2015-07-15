@@ -5,7 +5,7 @@
   <row>
     <panel>
       <html>
-        <h2>Deployments</h2>
+        <h2 id="punchCardHeader" >Deployments over the past 12 months</h2>
         <div id="punchCard">
           <div id="cal-heatmap"></div>
         </div>

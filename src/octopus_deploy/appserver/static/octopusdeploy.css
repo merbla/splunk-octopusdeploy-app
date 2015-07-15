@@ -4,9 +4,18 @@
 #avgDeploymentTime, #longDeployments, #deploymentsByHour, #deploymentPunchCard {
   height: 300px;
 }
-#deploymentOutcomeByProject, #byDuration, #punchCard {
+#deploymentOutcomeByProject, #byDuration {
   height: 300px;
+
 }
+#punchCard{
+  height: 1500px;
+
+}
+#punchCardHeader{
+  padding-bottom: 10px;
+}
+
 
 #deploymentOutcomeByProjectChart {
   /*margin: 0px;
