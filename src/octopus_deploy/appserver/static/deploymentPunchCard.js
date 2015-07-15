@@ -74,7 +74,7 @@ require([
         range: 12,
         cellsize: 40,
         domainGutter: 15,
-        weekStartOnMonday: 0,
+        //weekStartOnMonday: 0,
         scale: [1, 10, 30, 50],
       });
     }

@@ -77,7 +77,7 @@ require([
           .axisLabel("Deployment Time (seconds)");
 
         chart.yAxis
-          .axisLabel('Deployments');
+          .axisLabel('# of Deployments');
 
         chart.showXAxis(true);
 

@@ -6,17 +6,13 @@
 }
 #deploymentOutcomeByProject, #byDuration {
   height: 300px;
-
 }
-#punchCard{
-  height: 1500px;
-
+#punchCard {
+  height: 150px;
 }
-#punchCardHeader{
+#punchCardHeader {
   padding-bottom: 10px;
 }
-
-
 #deploymentOutcomeByProjectChart {
   /*margin: 0px;
   padding: 0px;*/
@@ -24,11 +20,10 @@
   width: 100%;
   /*display: block;*/
 }
-
-#avgDepSearchSingle{
+#avgDepSearchSingle {
   height: 0px;
   width: 0px;
 }
-.splunk-single{
-    visibility: hidden;
+.splunk-single {
+  visibility: hidden;
 }

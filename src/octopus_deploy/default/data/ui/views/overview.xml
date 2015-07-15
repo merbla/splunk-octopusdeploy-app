@@ -4,7 +4,7 @@
   <row>
     <panel>
       <html>
-        <h2>Active Environments</h2>
+        <h2>Active Environments (Last 3 Months)</h2>
         <div id="last3monthsdeployments">
             <svg id="last3monthsDeploymentsChart"></svg>
         </div>
@@ -12,7 +12,7 @@
     </panel>
     <panel>
       <html>
-        <h2>Active Projects</h2>
+        <h2>Active Projects (Last 3 Months)</h2>
         <div id="activeProjectsByDeployments">
           <svg id="activeProjectsByDeploymentsChart"></svg>
         </div>
@@ -57,5 +57,5 @@
       <search id="avgDepSearch" ref="OctopusDeploy - AvgDuration">
       </search>
     </single>
-  </row> 
+  </row>
 </dashboard>

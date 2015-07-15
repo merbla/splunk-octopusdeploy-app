@@ -4,5 +4,4 @@
   <view name="punchcard" />
   <view name="audit" />
   <view name="about" />
-  <view name="play" />
 </nav>
