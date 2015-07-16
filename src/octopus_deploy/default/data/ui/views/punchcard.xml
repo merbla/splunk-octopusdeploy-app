@@ -1,17 +1,18 @@
-<dashboard script="autodiscover.js, deploymentPunchCard.js"
-  stylesheet="octopusdeploy.css, nv.d3.min.css, cal-heatmap.css">
+<dashboard script="autodiscover.js, deploymentPunchCard.js" stylesheet="octopusdeploy.css, nv.d3.min.css, cal-heatmap.css">
   <label>Frequency</label>
 
   <row>
     <panel>
       <html>
-        <h2 id="punchCardHeader" >Deployments over the past 12 months</h2>
-        <div id="punchCard">
-          <div id="cal-heatmap"></div>
+        <div id="punchOuter">
+          <div id="punchCard6">
+            <div id="cal-heatmap"></div>
+          </div>
+          <div id="punchCard12">
+            <div id="cal-heatmap"></div>
+          </div>
         </div>
       </html>
     </panel>
   </row>
-
-
 </dashboard>

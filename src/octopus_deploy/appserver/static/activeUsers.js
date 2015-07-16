@@ -38,7 +38,7 @@ require([
 
   var mainSearch = new searchManager({
     id: "activeUsersSearch",
-    search: "sourcetype=octopus:event | timechart span=1day count by Username",
+    search: "sourcetype=octopus:event earliest=-7d@d latest=now  | timechart span=1day count by Username",
   });
 
   var results = mainSearch.data("preview", {});

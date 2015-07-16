@@ -23,7 +23,7 @@
     </panel>
     <panel>
       <html>
-        <h2>Avgerage Deployment Time (seconds)</h2>
+        <h2>Average Deployment Duration (seconds)</h2>
         <div id="avgDeploymentTime">
             <svg id="avgDeploymentTimeChart"></svg>
         </div>
@@ -31,7 +31,7 @@
     </panel>
     <panel>
       <html>
-        <h2>Active Users</h2>
+        <h2>Active Users (Last 7 Days)</h2>
         <div id="activeUsers">
           <svg id="activeUsersChart"></svg>
         </div>
@@ -47,13 +47,6 @@
         </div>
       </html>
     </panel>
-  </row>
-  <row >
-    <html>
-      <div>
-        Add some info/description
-      </div>
-    </html>
   </row>
   <row>
     <single id="avgDepSearchSingle">

@@ -59,23 +59,48 @@ require([
 
       var parsed = parser(series);
 
-      var now = new Date();
-
-      var startDate = moment()
+      var startDate6 = moment()
         .subtract(11, 'month')
         .toDate();
 
-      var calendar = new CalHeatMap();
-      calendar.init({
-        start: startDate,
+      var calendar6 = new CalHeatMap();
+      calendar6.init({
+        itemSelector: "#punchCard6",
+        start: startDate6,
         data: parsed,
         domain: "month",
         subDomain: "x_day",
-        range: 12,
-        cellsize: 40,
+        range: 6,
+        cellSize: 20,
         domainGutter: 15,
-        //weekStartOnMonday: 0,
-        scale: [1, 10, 30, 50],
+        scale: [1, 10, 50, 100],
+        displayLegend: false,
+        cellLabel: {
+          empty: "0 deployments on {date}",
+          filled: "{count} deployments on {date}"
+        },
+      });
+
+      var startDate12 = moment()
+        .subtract(5, 'month')
+        .toDate();
+
+      var calendar12 = new CalHeatMap();
+      calendar12.init({
+        itemSelector: "#punchCard12",
+        start: startDate12,
+        data: parsed,
+        domain: "month",
+        subDomain: "x_day",
+        range: 6,
+        cellSize: 20,
+        domainGutter: 15,
+        scale: [1, 10, 50, 100],
+        legendCellSize: 20,
+        cellLabel: {
+          empty: "0 deployments on {date}",
+          filled: "{count} deployments on {date}"
+        },
       });
     }
   });

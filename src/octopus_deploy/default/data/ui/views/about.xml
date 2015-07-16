@@ -3,64 +3,109 @@
   <row>
     <html>
       <article class="markdown-body">
-        <h1>
-          <a aria-hidden="true" class="anchor" href="#octopusdeploy-app-for-splunk" id="user-content-octopusdeploy-app-for-splunk">
-            <span class="octicon octicon-link"></span>
-          </a>OctopusDeploy App for Splunk</h1>
-
-        <p>The OctopusDeploy App for Splunk provides a
+        <h1 id="octopus-deploy-app-for-splunk">
+          <a aria-hidden="true" class="headeranchor-link" href="#octopus-deploy-app-for-splunk" name="user-content-octopus-deploy-app-for-splunk">
+            <span class="headeranchor"></span>
+          </a>Octopus Deploy App for Splunk</h1>
+        <p>The Octopus Deploy App for Splunk provides a
           <a href="http://docs.splunk.com/Documentation/Splunk/6.2.4/AdvancedDev/ModInputsIntro">modular input</a>
           to ingest data from an
           <a href="http://octopusdeploy.com/">Octopus Deploy</a>
           instance, and a set of dashboards and views to analyse the data.</p>
-
-        <h2>
-          <a aria-hidden="true" class="anchor" href="#installationconfiguration" id="user-content-installationconfiguration">
-            <span class="octicon octicon-link"></span>
-          </a>Installation/Configuration</h2>
-
+        <p>You will need an
+          <a href="http://docs.octopusdeploy.com/display/OD/How+to+create+an+API+key">API Key</a>
+          from your Octopus Server.</p>
+        <p>Once the data input(s) have been configured, searches can be performed using the following source types:</p>
+        <ul>
+          <li>Users :
+            <code>octopus:user</code>
+          </li>
+          <li>Tasks :
+            <code>octopus:task</code>
+          </li>
+          <li>Events :
+            <code>octopus:event</code>
+          </li>
+          <li>Deployments :
+            <code>octopus:deployment</code>
+          </li>
+          <li>Releases :
+            <code>octopus:release</code>
+          </li>
+          <li>Environments :
+            <code>octopus:environment</code>
+          </li>
+          <li>Projects :
+            <code>octopus:project</code>
+          </li>
+          <li>Machines :
+            <code>octopus:machine</code>
+          </li>
+          <li>Teams :
+            <code>octopus:teams</code>
+          </li>
+        </ul>
         <p>The app makes use of the
           <a href="https://nodejs.org/">NodeJS</a>
-          Splunk modular inputs.
+          Splunk modular inputs capability via HTTP/HTTPS.
         </p>
-
-        <h3>
-          <a aria-hidden="true" class="anchor" href="#prerequisites" id="user-content-prerequisites">
-            <span class="octicon octicon-link"></span>
-          </a>Prerequisites</h3>
-
+        <h2 id="prerequisites">
+          <a aria-hidden="true" class="headeranchor-link" href="#prerequisites" name="user-content-prerequisites">
+            <span class="headeranchor"></span>
+          </a>Prerequisites</h2>
         <ul>
           <li>Splunk Enterprise instance, version 6.2 or later.</li>
         </ul>
-
-        <h3>
-          <a aria-hidden="true" class="anchor" href="#installing-nodejs-components" id="user-content-installing-nodejs-components">
-            <span class="octicon octicon-link"></span>
-          </a>Installing NodeJS components</h3>
-
-        <ul>
-          <li>Install the app</li>
-          <li>
-            Open a terminal window or command prompt, navigate to
-            <code>$SPLUNK_HOME/etc/apps/octopus_deploy/bin/app</code>
-          </li>
-          <li>
-            <code>npm install</code>
-          </li>
-          <li>Restart Splunk</li>
-        </ul>
-
-        <h2>
-          <a aria-hidden="true" class="anchor" href="#feedback-and-issues" id="user-content-feedback-and-issues">
-            <span class="octicon octicon-link"></span>
-          </a>Feedback and Issues</h2>
-
+        <h1 id="feedback-and-issues">
+          <a aria-hidden="true" class="headeranchor-link" href="#feedback-and-issues" name="user-content-feedback-and-issues">
+            <span class="headeranchor"></span>
+          </a>Feedback and Issues</h1>
         <ul>
           <li>
             <a href="https://github.com/merbla/splunk-octopusdeploy-app">Github Repo</a>
           </li>
           <li>
             <a href="https://github.com/merbla/splunk-octopusdeploy-app/issues">Issues</a>
+          </li>
+        </ul>
+        <h1 id="attributions">
+          <a aria-hidden="true" class="headeranchor-link" href="#attributions" name="user-content-attributions">
+            <span class="headeranchor"></span>
+          </a>Attributions</h1>
+        <p>Special Thanks go to the following libraries that make this Splunk App possible.</p>
+        <ul>
+          <li>
+            <a href="http://octopusdeploy.com/">Octopus Deploy</a>
+          </li>
+        </ul>
+        <h3 id="nodejs-modular-input">
+          <a aria-hidden="true" class="headeranchor-link" href="#nodejs-modular-input" name="user-content-nodejs-modular-input">
+            <span class="headeranchor"></span>
+          </a>NodeJS Modular Input</h3>
+        <ul>
+          <li>
+            <a href="https://lodash.com/">Lodash</a>
+          </li>
+          <li>
+            <a href="https://www.npmjs.com/package/request">request</a>
+          </li>
+          <li>
+            <a href="https://www.npmjs.com/package/request-promise">request-promise</a>
+          </li>
+        </ul>
+        <h3 id="dashboardviews">
+          <a aria-hidden="true" class="headeranchor-link" href="#dashboardviews" name="user-content-dashboardviews">
+            <span class="headeranchor"></span>
+          </a>Dashboard/views</h3>
+        <ul>
+          <li>
+            <a href="http://d3js.org/">d3</a>
+          </li>
+          <li>
+            <a href="http://nvd3-community.github.io/nvd3/examples/documentation.html">nvd3</a>
+          </li>
+          <li>
+            <a href="http://kamisama.github.io/">cal-heatmap</a>
           </li>
         </ul>
       </article>

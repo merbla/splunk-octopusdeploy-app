@@ -62,6 +62,7 @@ require([
 
         chart
           .duration(300)
+              .color(["#2E92DF"])
           .rotateLabels(-45)
           .x(function(d) {
             return d.durationInSecs;
@@ -77,7 +78,7 @@ require([
           .axisLabel("Deployment Time (seconds)");
 
         chart.yAxis
-          .axisLabel('# of Deployments');
+          .axisLabel('Number of Deployments');
 
         chart.showXAxis(true);
 

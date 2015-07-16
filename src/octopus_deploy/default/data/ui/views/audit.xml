@@ -12,9 +12,11 @@
 
   <row>
     <html>
-      <div>
-        Audit Info
-      </div>
+      <article class="markdown-body">
+        <div>The table below provides a list of audit events similar to what is viewable from
+          <code>https://myoctopusdeployinstance/app#/configuration/audit</code>
+        </div>
+      </article>
     </html>
   </row>
   <row>

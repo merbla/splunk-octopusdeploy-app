@@ -2,7 +2,7 @@
   stylesheet="octopusdeploy.css, nv.d3.min.css">
   <label>Deployments</label>
   <search id="durationGroupedSearch" ref="OctopusDeploy - DurationGrouped"></search>
-  
+
   <row>
     <panel>
       <html>
@@ -30,7 +30,7 @@
   <row>
     <panel>
       <html>
-        <h2>By Duration</h2>
+        <h2>Deployment Duration</h2>
         <div id="byDuration">
           <svg id="byDurationChart"></svg>
         </div>

@@ -18,20 +18,27 @@ Once the data input(s) have been configured, searches can be performed using the
 
 The app makes use of the [NodeJS](https://nodejs.org/) Splunk modular inputs capability via HTTP/HTTPS.  
 
-###Prerequisites
+##Prerequisites
  - Splunk Enterprise instance, version 6.2 or later.
 
-###Installing NodeJS components
-- Install the app
-- Open a terminal window or command prompt, navigate to `$SPLUNK_HOME/etc/apps/octopus_deploy/bin/app`
-- `npm install`
-- Restart Splunk
-
-##Feedback and Issues
+#Feedback and Issues
 
  - [Github Repo](https://github.com/merbla/splunk-octopusdeploy-app)
  - [Issues](https://github.com/merbla/splunk-octopusdeploy-app/issues)
 
- ##Attributions
+#Attributions
+
+Special Thanks go to the following libraries that make this Splunk App possible.
 
  - [Octopus Deploy](http://octopusdeploy.com/)
+
+
+###NodeJS Modular Input
+ - [Lodash](https://lodash.com/)
+ - [request](https://www.npmjs.com/package/request)
+ - [request-promise](https://www.npmjs.com/package/request-promise)
+
+###Dashboard/views
+ - [d3](http://d3js.org/)
+ - [nvd3](http://nvd3-community.github.io/nvd3/examples/documentation.html)
+ - [cal-heatmap](http://kamisama.github.io/)
