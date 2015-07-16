@@ -2,17 +2,10 @@
   stylesheet="octopusdeploy.css, nv.d3.min.css">
   <label>Overview</label>
   <row>
+
     <panel>
       <html>
-        <h2>Active Environments (Last 3 Months)</h2>
-        <div id="last3monthsdeployments">
-            <svg id="last3monthsDeploymentsChart"></svg>
-        </div>
-      </html>
-    </panel>
-    <panel>
-      <html>
-        <h2>Active Projects (Last 3 Months)</h2>
+        <h2>Active Projects (Last 30 Days)</h2>
         <div id="activeProjectsByDeployments">
           <svg id="activeProjectsByDeploymentsChart"></svg>
         </div>
@@ -41,6 +34,16 @@
         <h2>Active Users</h2>
         <div id="activeUsers">
           <svg id="activeUsersChart"></svg>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <h2>Active Environments (Last 90 Days)</h2>
+        <div id="last3monthsdeployments">
+            <svg id="last3monthsDeploymentsChart"></svg>
         </div>
       </html>
     </panel>
