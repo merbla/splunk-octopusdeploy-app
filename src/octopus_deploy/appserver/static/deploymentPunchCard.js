@@ -73,9 +73,9 @@ require([
         range: 6,
         cellSize: 20,
         domainGutter: 15,
-        scale: [1, 10, 50, 100],
+        legend: [10, 20, 50, 75, 100],
         displayLegend: false,
-        cellLabel: {
+        subDomainTitleFormat: {
           empty: "0 deployments on {date}",
           filled: "{count} deployments on {date}"
         },
@@ -95,9 +95,9 @@ require([
         range: 6,
         cellSize: 20,
         domainGutter: 15,
-        scale: [1, 10, 50, 100],
+        legend: [10, 20, 50, 75, 100],
         legendCellSize: 20,
-        cellLabel: {
+        subDomainTitleFormat: {
           empty: "0 deployments on {date}",
           filled: "{count} deployments on {date}"
         },
