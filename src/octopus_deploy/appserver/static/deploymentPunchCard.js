@@ -79,6 +79,9 @@ require([
           empty: "0 deployments on {date}",
           filled: "{count} deployments on {date}"
         },
+        legendColors :{
+          base: "2E92DF"
+        }
       });
 
       var startDate12 = moment()
@@ -101,6 +104,9 @@ require([
           empty: "0 deployments on {date}",
           filled: "{count} deployments on {date}"
         },
+        legendColors :{
+          base: "2E92DF"
+        }
       });
     }
   });

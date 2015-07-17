@@ -42,7 +42,7 @@
             <code>octopus:machine</code>
           </li>
           <li>Teams :
-            <code>octopus:teams</code>
+            <code>octopus:team</code>
           </li>
         </ul>
         <p>The app makes use of the

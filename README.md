@@ -16,7 +16,7 @@ Once that is done, you can search using the following source types:
  - Environments : `octopus:environment`
  - Projects : `octopus:project`
  - Machines : `octopus:machine`
- - Teams : `octopus:teams`
+ - Teams : `octopus:team`
 
 
 ###Resources

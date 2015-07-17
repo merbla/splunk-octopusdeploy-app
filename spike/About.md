@@ -14,7 +14,7 @@ Once the data input(s) have been configured, searches can be performed using the
  - Environments : `octopus:environment`
  - Projects : `octopus:project`
  - Machines : `octopus:machine`
- - Teams : `octopus:teams`
+ - Teams : `octopus:team`
 
 The app makes use of the [NodeJS](https://nodejs.org/) Splunk modular inputs capability via HTTP/HTTPS.  
 
