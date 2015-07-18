@@ -12,7 +12,7 @@
           to ingest data from an
           <a href="http://octopusdeploy.com/">Octopus Deploy</a>
           instance, and a set of dashboards and views to analyse the data.</p>
-        <p>You will need an
+        <p>This app works with Octopus Deploy 2.6+ or 3.0 beta.  You will need an
           <a href="http://docs.octopusdeploy.com/display/OD/How+to+create+an+API+key">API Key</a>
           from your Octopus Server.</p>
         <p>Once the data input(s) have been configured, searches can be performed using the following source types:</p>

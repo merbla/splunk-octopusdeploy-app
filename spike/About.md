@@ -2,7 +2,7 @@
 
 The Octopus Deploy App for Splunk provides a [modular input](http://docs.splunk.com/Documentation/Splunk/6.2.4/AdvancedDev/ModInputsIntro) to ingest data from an [Octopus Deploy](http://octopusdeploy.com/) instance, and a set of dashboards and views to analyse the data.
 
-You will need an [API Key](http://docs.octopusdeploy.com/display/OD/How+to+create+an+API+key) from your Octopus Server.
+This app works with Octopus Deploy 2.6+ or 3.0 beta.  You will need an [API Key](http://docs.octopusdeploy.com/display/OD/How+to+create+an+API+key) from your Octopus Server.
 
 Once the data input(s) have been configured, searches can be performed using the following source types:
 
