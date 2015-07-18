@@ -298,47 +298,92 @@ getResource = function(host, apikey, uri, onComplete, onError) {
 
 
 mapFromOctoProject = function(host, octoEvent) {
-  var splunkEvent = new Event({
-    stanza: host,
-    sourcetype: "octopus:project",
-    data: octoEvent,
-    time: Date.parse(octoEvent.LastModifiedOn)
-  });
 
-  return splunkEvent;
+  if (octoEvent.LastModifiedOn) {
+
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:project",
+      data: octoEvent,
+      time: Date.parse(octoEvent.LastModifiedOn)
+    });
+    return splunkEvent;
+
+  } else {
+
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:project",
+      data: octoEvent
+    });
+    return splunkEvent;
+  }
 }
 
 mapFromOctoEvent = function(host, octoEvent) {
-  var splunkEvent = new Event({
-    stanza: host,
-    sourcetype: "octopus:event",
-    data: octoEvent,
-    time: Date.parse(octoEvent.Occurred)
-  });
+  if (octoEvent.Occurred) {
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:event",
+      data: octoEvent,
+      time: Date.parse(octoEvent.Occurred)
+    });
 
-  return splunkEvent;
+    return splunkEvent;
+  } else {
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:event",
+      data: octoEvent
+    });
+
+    return splunkEvent;
+  }
+
 }
 
 mapFromOctoMachine = function(host, octoEvent) {
-  var splunkEvent = new Event({
-    stanza: host,
-    sourcetype: "octopus:machine",
-    data: octoEvent,
-    time: Date.parse(octoEvent.LastModifiedOn)
-  });
+  if (octoEvent.LastModifiedOn) {
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:machine",
+      data: octoEvent,
+      time: Date.parse(octoEvent.LastModifiedOn)
+    });
 
-  return splunkEvent;
+    return splunkEvent;
+  } else {
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:machine",
+      data: octoEvent
+    });
+
+    return splunkEvent;
+  }
 }
 
 mapFromOctoDeployment = function(host, octoEvent) {
-  var splunkEvent = new Event({
-    stanza: host,
-    sourcetype: "octopus:deployment",
-    data: octoEvent,
-    time: Date.parse(octoEvent.Created)
-  });
 
-  return splunkEvent;
+  if (octoEvent.Created) {
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:deployment",
+      data: octoEvent,
+      time: Date.parse(octoEvent.Created)
+    });
+
+    return splunkEvent;
+  } else {
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:deployment",
+      data: octoEvent
+    });
+
+    return splunkEvent;
+  }
+
 }
 
 mapFromOctoTeam = function(host, octoEvent) {
@@ -368,14 +413,27 @@ mapFromOctoTeam = function(host, octoEvent) {
 
 mapFromOctoEnvironment = function(host, octoEvent) {
 
-  var splunkEvent = new Event({
-    stanza: host,
-    sourcetype: "octopus:environment",
-    data: octoEvent,
-    time: Date.parse(octoEvent.LastModifiedOn)
-  });
+  if (octoEvent.LastModifiedOn) {
 
-  return splunkEvent;
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:environment",
+      data: octoEvent,
+      time: Date.parse(octoEvent.LastModifiedOn)
+    });
+
+    return splunkEvent;
+  } else {
+
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:environment",
+      data: octoEvent
+    });
+
+    return splunkEvent;
+  }
+
 }
 
 mapFromOctoUser = function(host, octoEvent) {
@@ -408,25 +466,56 @@ mapFromOctoUser = function(host, octoEvent) {
 }
 
 mapFromOctoRelease = function(host, octoEvent) {
-  var splunkEvent = new Event({
-    stanza: host,
-    sourcetype: "octopus:release",
-    data: octoEvent,
-    time: Date.parse(octoEvent.Assembled)
-  });
 
-  return splunkEvent;
+  if (octoEvent.Assembled) {
+
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:release",
+      data: octoEvent,
+      time: Date.parse(octoEvent.Assembled)
+    });
+
+    return splunkEvent;
+  } else {
+
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:release",
+      data: octoEvent
+    });
+
+    return splunkEvent;
+  }
+
 }
 
 mapFromOctoTask = function(host, octoEvent) {
-  var splunkEvent = new Event({
-    stanza: host,
-    sourcetype: "octopus:task",
-    data: octoEvent,
-    time: Date.parse(octoEvent.CompletedTime)
-  });
 
-  return splunkEvent;
+  if (octoEvent.CompletedTime) {
+
+
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:task",
+      data: octoEvent,
+      time: Date.parse(octoEvent.CompletedTime)
+    });
+
+    return splunkEvent;
+
+  } else {
+
+    var splunkEvent = new Event({
+      stanza: host,
+      sourcetype: "octopus:task",
+      data: octoEvent
+    });
+
+    return splunkEvent;
+
+  }
+
 }
 
 streamOctoStuff = function(name, singleInput, eventWriter, done, checkpointDir, checkpointFilePath, getIt, mapIt) {
