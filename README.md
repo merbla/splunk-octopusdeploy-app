@@ -38,9 +38,6 @@ You will need an [API Key](http://docs.octopusdeploy.com/display/OD/How+to+creat
 
 The app can be installed via the Manage Apps interface. Once deployed the only configuration of the application is via a data input and its related index.  The modular input is configured using the host of the Octopus Server and the API key that can be assigned to an authorised user.
 
-#Test Data
-Test Data files can be found at https://github.com/merbla/splunk-octopusdeploy-app/tree/master/testdata/
-
 ###Resources
 - [My Blog Intro](
 http://blog.merbla.com/2015/06/25/introducing-the-splunk-add-on-for-octopus-deploy/)
