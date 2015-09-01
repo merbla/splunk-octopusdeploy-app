@@ -2,6 +2,8 @@
 
 A Splunk app to stream events from [Octopus Deploy](http://octopusdeploy.com/) to [Splunk](http://www.splunk.com/).
 
+Get the latest from [Splunk Base](https://splunkbase.splunk.com/app/2859/)
+
 The application is comprised of two main areas, a modular input and a set of dashboard views.
 
 ##Modular Input
@@ -36,7 +38,7 @@ The audit view allows visibility into the tasks and significant events occuring 
 
 You will need an [API Key](http://docs.octopusdeploy.com/display/OD/How+to+create+an+API+key) from your Octopus Server.
 
-The app can be installed via the Manage Apps interface. Once deployed the only configuration of the application is via a data input and its related index.  The modular input is configured using the host of the Octopus Server and the API key that can be assigned to an authorised user.
+The latest app can be found on [Splunk Base](https://splunkbase.splunk.com/app/2859/)
 
 ###Resources
 - [My Blog Intro](
