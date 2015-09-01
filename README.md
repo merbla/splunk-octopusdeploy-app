@@ -3,12 +3,12 @@
 A Splunk app to stream events from [Octopus Deploy](http://octopusdeploy.com/) to [Splunk](http://www.splunk.com/).
 
 Get the latest from [Splunk Base](https://splunkbase.splunk.com/app/2859/)
-
-- [GitHub Project](https://github.com/merbla/splunk-octopusdeploy-app)
 - Issues List @ [GitHub](https://github.com/merbla/splunk-octopusdeploy-app/issues)
 - Wiki @ [Github](https://github.com/merbla/splunk-octopusdeploy-app/wiki)
 
 The application is comprised of two main areas, a modular input and a set of dashboard views.
+
+![](https://github.com/merbla/splunk-octopusdeploy-app/blob/master/screenshots/Overview.png)
 
 ##Installation/Configuration
 You will need an [API Key](http://docs.octopusdeploy.com/display/OD/How+to+create+an+API+key) from your Octopus Server.
