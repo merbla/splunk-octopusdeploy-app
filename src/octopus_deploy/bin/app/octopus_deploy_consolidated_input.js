@@ -520,81 +520,85 @@ mapFromOctoTask = function(host, octoEvent) {
 
 streamOctoStuff = function(name, singleInput, eventWriter, done, checkpointDir, checkpointFilePath, getIt, mapIt, context) {
 
-  Logger.info(name, modName + " STARTING streamOctoStuff " + context)
-
+  Logger.info(name, modName + " STARTING streamOctoStuff " + context);
   var uri = null;
   var working = true;
-
   var host = singleInput.octopusDeployHost;
   var key = singleInput.apikey;
 
-  while (working) {
-    try {
-      var alreadyIndexed = 0;
-      var checkpointFileNewContents = "";
-      var errorFound = false;
+  Async.whilst(
+      function() {
+        return working;
+      },
+      try {
+        var alreadyIndexed = 0;
+        var checkpointFileNewContents = "";
+        var errorFound = false;
 
-      Logger.info(name, modName + " GETTING data for " + context)
+        getIt(host, key, uri, function(data) {
 
-      getIt(host, key, uri, function(data) {
+          var checkpointFileContents = checkFile(checkpointFilePath);
 
-        var checkpointFileContents = checkFile(checkpointFilePath);
+          for (var i = 0; i < data.Items.length && !errorFound; i++) {
 
-        for (var i = 0; i < data.Items.length && !errorFound; i++) {
+            var octoEvent = data.Items[i];
 
-          var octoEvent = data.Items[i];
+            Logger.info(name, modName + ": Checking for Id - " + octoEvent.Id);
 
-          Logger.info(name, modName + ": Checking for Id - " + octoEvent.Id);
+            if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
+              try {
+                var evt = mapIt(host, octoEvent);
 
-          if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
-            try {
+                Logger.info(name, modName + ": Event - " + evt + " " + evt.time);
 
-              var evt = mapIt(host, octoEvent);
-            //  Logger.info(name, modName + ": Event - " + evt + " " + evt.time);
+                eventWriter.writeEvent(evt);
 
-              eventWriter.writeEvent(evt);
-              Logger.info(name, modName + " EVENT data for written for " + octoEvent.Id + " time " + evt.time + " " + context);
-              //Logger.info(name, modName + ": Indexed " + octoEvent.Id);
+                checkpointFileNewContents += octoEvent.Id + "\n";
+                Logger.info(name, modName + ": Indexed " + octoEvent.Id);
+                fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
 
-              checkpointFileNewContents += octoEvent.Id + "\n";
-              fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+              } catch (e) {
+                errorFound = true;
+                working = false; // Stop streaming if we get an error.
 
-            } catch (e) {
-              errorFound = true;
-              working = false; // Stop streaming if we get an error.
-              Logger.info(name, modName + "ERROR found " + context);
+                Logger.info(name, modName + " ERROR streamOctoStuff " + e.message + " from " + context);
 
-              Logger.error(name, e.message);
-
+                Logger.error(name, e.message);
+              }
+            } else {
+              Logger.info(name, modName + " : Already Indexed Id " + octoEvent.Id);
+              alreadyIndexed++;
             }
-          } else {
-            Logger.info(name, modName + " : Already Indexed Id " + octoEvent.Id);
-            alreadyIndexed++;
+          };
+
+          if (alreadyIndexed > 0) {
+            Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed  from " + context);
           }
-        };
 
-        if (alreadyIndexed > 0) {
-          Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed  from " + host + uri);
-        }
+          alreadyIndexed = 0;
 
-        alreadyIndexed = 0;
+          if (data && data.Links && data.Links["Page.Next"]) {
+            var nextUri = data.Links["Page.Next"];
 
-        if (data && data.Links && data.Links["Page.Next"]) {
-          var nextUri = data.Links["Page.Next"];
+            Logger.info(name, modName + ": Found more items to process :  " + nextUri);
+            uri = nextUri;
+          } else {
+            Logger.info(name, modName + ": Nothing more to index!");
+            working = false
+          }
 
-          Logger.info(name, modName + ": Found more items to process :  " + nextUri);
-          uri = nextUri;
-        } else {
-          Logger.info(name, modName + ": Nothing more to index!");
-          working = false
-        }
+          callback();
+        });
 
-        callback();
-      });
-
-    } catch (e) {
-      Logger.error(name, e.message);
-    }
-
-  }
+      } catch (e) {
+        Logger.info(name, modName + " ERROR streamOctoStuff " + e.message + " from " + context);
+        Logger.error(name, e.message);
+        working = false
+        callback(e);
+      }
+    },
+    function(err) {
+      //   Logger.info(name, modName + " ERROR streamOctoStuff " +  err + " from " + context);
+      // Logger.error(name, err);
+    });
 };
