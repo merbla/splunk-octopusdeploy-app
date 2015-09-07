@@ -68,7 +68,7 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
   var uri = null;
   var working = true;
 
-  Logger.info(name, modName + " STARTING streamEvents");
+  Logger.info(name, modName + " Starting stream events for :");
 
   var host = singleInput.octopusDeployHost;
   var apikey = singleInput.apikey;
@@ -85,21 +85,23 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
   var teamsCheckpointFilePath = getFileName(checkpointDir, apikey, "Teams");
 
   //Events that we only want in index once
-  streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, eventsCheckpointFilePath, getEventsPaged, mapFromOctoEvent, "events");
-  streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, deploymentsCheckpointFilePath, getDeploymentsPaged, mapFromOctoDeployment, "deployments");
-
-  // streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, releasesCheckpointFilePath, getReleasesPaged, mapFromOctoRelease);
-  // streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, tasksCheckpointFilePath, getTasksPaged, mapFromOctoTask);
-  // streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, usersCheckpointFilePath, getUsersPaged, mapFromOctoUser);
-  // streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, environmentsCheckpointFilePath, getEnvironmentsPaged, mapFromOctoEnvironment);
-  // streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, projectsCheckpointFilePath, getProjectsPaged, mapFromOctoProject);
-  // streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, machinesCheckpointFilePath, getMachinesPaged, mapFromOctoMachine);
-  // streamOctoStuff(name, singleInput, eventWriter, done, checkpointDir, teamsCheckpointFilePath, getTeamsPaged, mapFromOctoTeam);
+  streamOctoStuff(name, singleInput, eventWriter, checkpointDir, eventsCheckpointFilePath, getEventsPaged, mapFromOctoEvent, "events",
+    function() {
+      streamOctoStuff(name, singleInput, eventWriter, checkpointDir, deploymentsCheckpointFilePath, getDeploymentsPaged, mapFromOctoDeployment, "deployments",
+        function() {
+          done();
+        });
+    });
+  // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, releasesCheckpointFilePath, getReleasesPaged, mapFromOctoRelease);
+  // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, tasksCheckpointFilePath, getTasksPaged, mapFromOctoTask);
+  // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, usersCheckpointFilePath, getUsersPaged, mapFromOctoUser);
+  // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, environmentsCheckpointFilePath, getEnvironmentsPaged, mapFromOctoEnvironment);
+  // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, projectsCheckpointFilePath, getProjectsPaged, mapFromOctoProject);
+  // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, machinesCheckpointFilePath, getMachinesPaged, mapFromOctoMachine);
+  // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, teamsCheckpointFilePath, getTeamsPaged, mapFromOctoTeam);
 
   //Status like reports that change over time (Dashboard etc)
-  Logger.info(name, modName + " FINISHED streamEvents");
 
-  done();
 };
 
 getFileName = function(checkpointDir, apikey, name) {
@@ -209,6 +211,7 @@ getDeploymentsPaged = function(host, apikey, uri, onComplete, onError) {
   //TODO: Return promise
 }
 
+
 getTeamsPaged = function(host, apikey, uri, onComplete, onError) {
 
   if (!uri) {
@@ -296,6 +299,7 @@ getResource = function(host, apikey, uri, onComplete, onError) {
       onError(error);
     });
 }
+
 
 mapFromOctoProject = function(host, octoEvent) {
 
@@ -518,18 +522,21 @@ mapFromOctoTask = function(host, octoEvent) {
 
 }
 
-streamOctoStuff = function(name, singleInput, eventWriter, done, checkpointDir, checkpointFilePath, getIt, mapIt, context) {
+streamOctoStuff = function(name, singleInput, eventWriter, checkpointDir, checkpointFilePath, getIt, mapIt, context, onComplete) {
 
-  Logger.info(name, modName + " STARTING streamOctoStuff " + context);
   var uri = null;
   var working = true;
+
   var host = singleInput.octopusDeployHost;
   var key = singleInput.apikey;
 
+  Logger.info(name, modName + ": Starting streamOctoStuff for " + context);
+
   Async.whilst(
-      function() {
-        return working;
-      },
+    function() {
+      return working;
+    },
+    function(callback) {
       try {
         var alreadyIndexed = 0;
         var checkpointFileNewContents = "";
@@ -547,23 +554,22 @@ streamOctoStuff = function(name, singleInput, eventWriter, done, checkpointDir, 
 
             if (checkpointFileContents.indexOf(octoEvent.Id + "\n") < 0) {
               try {
-                var evt = mapIt(host, octoEvent);
 
+
+                var evt = mapIt(host, octoEvent);
                 Logger.info(name, modName + ": Event - " + evt + " " + evt.time);
 
                 eventWriter.writeEvent(evt);
 
                 checkpointFileNewContents += octoEvent.Id + "\n";
                 Logger.info(name, modName + ": Indexed " + octoEvent.Id);
-                fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
-
               } catch (e) {
                 errorFound = true;
                 working = false; // Stop streaming if we get an error.
-
-                Logger.info(name, modName + " ERROR streamOctoStuff " + e.message + " from " + context);
-
                 Logger.error(name, e.message);
+                fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+                done(e);
+                return;
               }
             } else {
               Logger.info(name, modName + " : Already Indexed Id " + octoEvent.Id);
@@ -571,11 +577,14 @@ streamOctoStuff = function(name, singleInput, eventWriter, done, checkpointDir, 
             }
           };
 
+          fs.appendFileSync(checkpointFilePath, checkpointFileNewContents); // Write to the checkpoint file
+
           if (alreadyIndexed > 0) {
-            Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed  from " + context);
+            Logger.info(name, modName + ": Skipped " + alreadyIndexed.toString() + " items already indexed  from " + host + uri);
           }
 
           alreadyIndexed = 0;
+
 
           if (data && data.Links && data.Links["Page.Next"]) {
             var nextUri = data.Links["Page.Next"];
@@ -583,22 +592,26 @@ streamOctoStuff = function(name, singleInput, eventWriter, done, checkpointDir, 
             Logger.info(name, modName + ": Found more items to process :  " + nextUri);
             uri = nextUri;
           } else {
+
             Logger.info(name, modName + ": Nothing more to index!");
             working = false
+            Logger.info(name, modName + ": Finished streamOctoStuff for " + context);
+
+            if (onComplete) {
+              Logger.info(name, modName + ": Running onComplete for " + context);
+              onComplete();
+            }
           }
 
           callback();
         });
 
       } catch (e) {
-        Logger.info(name, modName + " ERROR streamOctoStuff " + e.message + " from " + context);
-        Logger.error(name, e.message);
-        working = false
         callback(e);
       }
     },
     function(err) {
-      //   Logger.info(name, modName + " ERROR streamOctoStuff " +  err + " from " + context);
-      // Logger.error(name, err);
-    });
+
+    }
+  );
 };
