@@ -89,9 +89,34 @@ exports.streamEvents = function(name, singleInput, eventWriter, done) {
     function() {
       streamOctoStuff(name, singleInput, eventWriter, checkpointDir, deploymentsCheckpointFilePath, getDeploymentsPaged, mapFromOctoDeployment, "deployments",
         function() {
-          done();
+          streamOctoStuff(name, singleInput, eventWriter, checkpointDir, releasesCheckpointFilePath, getReleasesPaged, mapFromOctoRelease, "releases",
+            function() {
+              streamOctoStuff(name, singleInput, eventWriter, checkpointDir, tasksCheckpointFilePath, getTasksPaged, mapFromOctoTask, "tasks",
+                function() {
+                  streamOctoStuff(name, singleInput, eventWriter, checkpointDir, usersCheckpointFilePath, getUsersPaged, mapFromOctoUser, "users",
+                    function() {
+                      streamOctoStuff(name, singleInput, eventWriter, checkpointDir, environmentsCheckpointFilePath, getEnvironmentsPaged, mapFromOctoEnvironment, "environments",
+                        function() {
+                          streamOctoStuff(name, singleInput, eventWriter, checkpointDir, projectsCheckpointFilePath, getProjectsPaged, mapFromOctoProject, "projects",
+                            function() {
+                              streamOctoStuff(name, singleInput, eventWriter, checkpointDir, machinesCheckpointFilePath, getMachinesPaged, mapFromOctoMachine, "machines",
+                                function() {
+                                  streamOctoStuff(name, singleInput, eventWriter, checkpointDir, teamsCheckpointFilePath, getTeamsPaged, mapFromOctoTeam, "teams",
+                                    function() {
+
+                                      done();
+                                    });
+
+                                });
+                            });
+                        });
+                    });
+                });
+            });
         });
     });
+
+
   // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, releasesCheckpointFilePath, getReleasesPaged, mapFromOctoRelease);
   // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, tasksCheckpointFilePath, getTasksPaged, mapFromOctoTask);
   // streamOctoStuff(name, singleInput, eventWriter, checkpointDir, usersCheckpointFilePath, getUsersPaged, mapFromOctoUser);
