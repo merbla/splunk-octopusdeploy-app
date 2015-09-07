@@ -36,6 +36,11 @@ require([
   //Load v3
   require("nvd3");
 
+   d3.selection.prototype.watchTransition = function(renderWatch){
+      var args = [this].concat([].slice.call(arguments, 1));
+      return renderWatch.transition.apply(renderWatch, args);
+  };
+
   var mainSearch = new searchManager({
     id: "activeUsersSearch",
     search: "sourcetype=octopus:event earliest=-7d@d latest=now  | timechart span=1day count by Username",

@@ -20,8 +20,13 @@ require.config({
 // workaround for nvd3 using global d3
 define('d3.global', ['d3v3'], function(_) {
   d3 = _;
-});
 
+  d3.selection.prototype.watchTransition = function(renderWatch){
+      var args = [this].concat([].slice.call(arguments, 1));
+      return renderWatch.transition.apply(renderWatch, args);
+  };
+
+});
 require([
   'underscore',
   'util/moment',
