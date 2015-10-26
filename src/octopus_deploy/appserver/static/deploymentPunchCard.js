@@ -25,9 +25,12 @@ require([
 
   var mainSearch = new searchManager({
     id: "deploymentsByHourSearch",
-    search: "sourcetype=octopus:deployment | bucket _time span=1d | stats count by _time",
-  });
+    search: "sourcetype=octopus:deployment EnvironmentId=$environment$ ProjectId=$project$ | bucket _time span=1d | stats count by _time",
+  }, {tokens: true});
 
+  var calendar12 = undefined;
+  var calendar6 = undefined;
+  
   var results = mainSearch.data("preview", {});
 
   results.on("data", function() {
@@ -63,51 +66,61 @@ require([
         .subtract(11, 'month')
         .toDate();
 
-      var calendar6 = new CalHeatMap();
-      calendar6.init({
-        itemSelector: "#punchCard6",
-        start: startDate6,
-        data: parsed,
-        domain: "month",
-        subDomain: "x_day",
-        range: 6,
-        cellSize: 20,
-        domainGutter: 15,
-        legend: [10, 20, 50, 75, 100],
-        displayLegend: false,
-        subDomainTitleFormat: {
-          empty: "0 deployments on {date}",
-          filled: "{count} deployments on {date}"
-        },
-        legendColors :{
-          base: "2E92DF"
-        }
-      });
-
+      if (calendar6 == undefined) {
+        calendar6 = new CalHeatMap();
+        calendar6.init({
+          itemSelector: "#punchCard6",
+          start: startDate6,
+          data: parsed,
+          domain: "month",
+          subDomain: "x_day",
+          range: 6,
+          cellSize: 20,
+          domainGutter: 15,
+          legend: [10, 20, 50, 75, 100],
+          displayLegend: false,
+          subDomainTitleFormat: {
+            empty: "0 deployments on {date}",
+            filled: "{count} deployments on {date}"
+          },
+          legendColors :{
+            base: "2E92DF"
+          }
+        });
+      } else {
+        calendar6.update(parsed);
+        calendar6.options.data = parsed;
+      }
+      
       var startDate12 = moment()
         .subtract(5, 'month')
         .toDate();
 
-      var calendar12 = new CalHeatMap();
-      calendar12.init({
-        itemSelector: "#punchCard12",
-        start: startDate12,
-        data: parsed,
-        domain: "month",
-        subDomain: "x_day",
-        range: 6,
-        cellSize: 20,
-        domainGutter: 15,
-        legend: [10, 20, 50, 75, 100],
-        legendCellSize: 20,
-        subDomainTitleFormat: {
-          empty: "0 deployments on {date}",
-          filled: "{count} deployments on {date}"
-        },
-        legendColors :{
-          base: "2E92DF"
-        }
-      });
+      if (calendar12 == undefined) {
+        calendar12 = new CalHeatMap();
+        calendar12.init({
+          itemSelector: "#punchCard12",
+          start: startDate12,
+          data: parsed,
+          domain: "month",
+          subDomain: "x_day",
+          range: 6,
+          cellSize: 20,
+          domainGutter: 15,
+          legend: [10, 20, 50, 75, 100],
+          legendCellSize: 20,
+          subDomainTitleFormat: {
+            empty: "0 deployments on {date}",
+            filled: "{count} deployments on {date}"
+          },
+          legendColors :{
+            base: "2E92DF"
+          }
+        });
+      } else {
+        calendar12.update(parsed);
+        calendar12.options.data = parsed;
+      }
     }
   });
 });
