@@ -1,6 +1,27 @@
-<dashboard script="autodiscover.js, deploymentPunchCard.js" stylesheet="octopusdeploy.css, nv.d3.min.css, cal-heatmap.css">
+<form script="autodiscover.js, deploymentPunchCard.js" stylesheet="octopusdeploy.css, nv.d3.min.css, cal-heatmap.css">
   <label>Frequency</label>
-
+  <fieldset submitButton="true">
+    <input type="dropdown" token="project" searchWhenChanged="true">
+      <label>Project</label>
+      <search>
+        <query>sourcetype=octopus:project | dedup Id,Name | table Id,Name | sort Name</query>
+      </search>
+      <fieldForLabel>Name</fieldForLabel>
+      <fieldForValue>Id</fieldForValue>
+      <choice value="*">All</choice>
+      <default>*</default>
+    </input>
+    <input type="dropdown" token="environment" searchWhenChanged="true">
+      <label>Environment</label>
+      <search>
+        <query>sourcetype=octopus:environment | dedup Id,Name | table Id,Name | sort Name</query>
+      </search>
+      <fieldForLabel>Name</fieldForLabel>
+      <fieldForValue>Id</fieldForValue>
+      <choice value="*">All</choice>
+      <default>*</default>
+    </input>
+  </fieldset>
   <row>
     <panel>
       <html>
@@ -15,4 +36,4 @@
       </html>
     </panel>
   </row>
-</dashboard>
+</form>
