@@ -1,7 +1,0 @@
-<nav color="2E92DF">
-  <view name="overview" default="true"/>
-  <view name="deployments" />
-  <view name="punchcard" />
-  <view name="audit" />
-  <view name="about" />
-</nav>
